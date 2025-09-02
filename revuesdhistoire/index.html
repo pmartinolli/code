@@ -441,37 +441,54 @@
     let subjectCounts = new Map();
 
     // ✅ Allowed QIDs for filters (list of history topics relevant for the Department
-    const allowedSubjects = new Set(["Q192781", // military history
-									 "Q111938447", // history of peace
-									 "Q109577608", // history of genocide
-									 "Q149813", // history of Africa
-									 "Q41493", // ancient history
-									 "Q627531", // history of Asia
-									 "Q82972", // history of China
-									 "Q186075", // contemporary history
-									 "Q7787", // history of Europe
-									 "Q7778", // history of France
-									 "Q105960891", // history of indigenous peoples
-									 "Q858517", // cultural history
-									 "Q680004", // legal history
-									 "Q1147507", // political history
-									 "Q846742", // history of religions
-									 "Q908604", // social history
-									 "Q7791", // history of Italy
-									 "Q3281534", // modern period
-									 "Q27992545", // medieval history
-									 "Q2945", // history of Canada
-									 "Q113162", // history of the United Kingdom
-									 "Q205157", // history of Ireland
-									 "Q131110", // history of the United States
-									 "Q642379", // history of Islam
-									 "Q12211529", // Middle Eastern studies
-									 "Q3137714", // history of Maghreb
-									 "Q3621186", // Arabic studies
-									 "Q12408688", // Palestinian studies
-									 "Q135999455", // history of youth
-									 "Q4204823", // history of childhood
-									 "Q2365406", // history of Latin America
+    const allowedSubjects = new Set([
+                                     "Q41493", // ancient history
+                                     "Q27992545", // medieval history
+                                     "Q3281534", // modern period
+                                     "Q186075", // contemporary history
+                                     "Q192781", // military history
+                                     "Q111938447", // history of peace
+                                     "Q109577608", // history of genocide
+                                     "Q149813", // history of Africa
+                                     "Q627531", // history of Asia
+                                     "Q82972", // history of China
+                                     "Q2945", // history of Canada
+                                     "Q7787", // history of Europe
+                                     "Q7778", // history of France
+                                     "Q7791", // history of Italy
+                                     "Q113162", // history of the United Kingdom
+                                     "Q205157", // history of Ireland
+                                     "Q131110", // history of the United States
+                                     "Q2365406", // history of Latin America
+                                     "Q4816595", // Atlantic world 
+                                     "Q55022436", // history of international relations
+                                     "Q3245246", // history of colonialism
+                                     "Q1279400", // women's history
+                                     "Q1517835", // gender history
+                                     "Q105960891", // history of indigenous peoples
+                                     "Q908604", // social history
+                                     "Q858517", // cultural history
+                                     "Q680004", // legal history
+                                     "Q1147507", // political history
+                                     "Q846742", // history of religions
+                                     "Q642379", // history of Islam
+                                     "Q12211529", // Middle Eastern studies
+                                     "Q3137714", // history of Maghreb
+                                     "Q3621186", // Arabic studies
+                                     "Q12408688", // Palestinian studies
+                                     "Q135999455", // history of youth
+                                     "Q4204823", // history of childhood
+                                     "Q201486", // history of science
+                                     "Q380274", // history of medicine
+                                     "Q1195695", // intellectual history
+                                     "Q570018", // history of ideas
+                                     "Q50675", // historiography
+                                     "Q59029", // labor history
+                                     "Q47398", // economic history
+                                     "Q952080", // history of agriculture
+                                     "Q7380580", // rural history
+                                     "Q1561862", // environmental history
+                                     "Q1569011", // urban history
 									]);
 
     async function processQIDs() {
