@@ -422,8 +422,8 @@
                         <thead>
                             <tr>
                                 <th>QID</th>
-                                <th>Libellé</th>
-                                <th>Site web officiel (P856)</th>
+                                <th>Nom de la revue</th>
+                                <th>Site web officiel (P856) et recherche dans Sofia UdeM</th>
                                 <th>Sujets (P921)</th>
                             </tr>
                         </thead>
@@ -692,7 +692,7 @@
             const row = document.createElement('tr');
 
             const websiteCell = entity.website 
-                ? `<a href="${entity.website}" target="_blank" class="website-link">${entity.website}</a>`
+                ? `<a href="${entity.website}" target="_blank" class="qid-link">Site web</a>`
                 : '<span class="no-data">No website</span>';
 
             const subjectsCell = entity.subjects.length > 0
@@ -704,7 +704,7 @@
             row.innerHTML = `
                 <td><a href="https://www.wikidata.org/wiki/${entity.qid}" target="_blank" class="qid-link">${entity.qid}</a></td>
                 <td><strong>${entity.label}</strong></td>
-                <td>${websiteCell}</td>
+                <td><small>${websiteCell} + <a href="https://umontreal.on.worldcat.org/search?queryString=ti:(${entity.label})&format=Jrnl&subformat=Jrnl::jrnl_digital&changedFacet=format" target="_blank" class="qid-link">Rech. Sofia UdeM</a><small></td>
                 <td>${subjectsCell}</td>
             `;
             
