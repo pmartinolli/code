@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Revues utiles à la recherche en histoire à l’UdeM</title>
+    <!-- web page displayed at https://pmartinolli.github.io/code/revuesdhistoire/ -->
+    <meta name="author" content="Pascal Martinolli">
+    <meta name="description" content="Cette liste inclut des titres spécialisés en histoire et des titres multidisciplinaires (revues savantes et revues d’intérêt général). Les données sont automatiquement extraites de Wikidata en temps réel.">
+    <meta name="keywords" content="HTML, CSS, JavaScript">
     <style>
         * {
             margin: 0;
@@ -379,7 +383,7 @@
         <p>
         Cette liste inclut des titres spécialisés en histoire et des titres multidisciplinaires (revues savantes et revues d’intérêt général). Les données sont automatiquement extraites de Wikidata en temps réel et elles peuvent donc contenir des lacunes ou des erreurs. Vous êtes chaleureusement invités à contribuer à Wikidata pour améliorer ces données (contacter votre <a href="https://boite-outils.bib.umontreal.ca/etudes-religieuses-histoire-philosophie/histoire">bibliothécaire en histoire</a> qui se fera un plaisir de vous guider). En <a href="faq.html">savoir plus</a>.
         </p>
-        <p>Chercheuses et chercheurs UdeM : L’accès depuis l’extérieur du campus à la plupart des revues en version électronique nécessite la configuration du <a href="https://studio.bib.umontreal.ca/informatique/proxy/">proxy</a>. Les bibliothèques/UdeM n’ont pas nécessairement un abonnement courant ou un accès aux archives complètes des revues listées ci-dessous. Si l’article voulu n’est pas disponible dans les abonnements UdeM, faites une demande de <a href="https://bib.umontreal.ca/obtenir/peb/">prêt entre bibliothèques</a>. Article disponible en papier seulement ? Faites une <a href="https://bib.umontreal.ca/obtenir/numerisation"> demande de numérisation</a>.
+        
         </p>
         <div class="demo-section">
             <h3>📋 Charger les données automatiquement depuis :</h3>
@@ -432,6 +436,7 @@
                 </div>
             </div>
         </div>
+		<p>Chercheuses et chercheurs UdeM : L’accès depuis l’extérieur du campus à la plupart des revues en version électronique nécessite la configuration du <a href="https://studio.bib.umontreal.ca/informatique/proxy/">proxy</a>. Les bibliothèques/UdeM n’ont pas nécessairement un abonnement courant ou un accès aux archives complètes des revues listées ci-dessous. Si l’article voulu n’est pas disponible dans les abonnements UdeM, faites une demande de <a href="https://bib.umontreal.ca/obtenir/peb/">prêt entre bibliothèques</a>. Article disponible en papier seulement ? Faites une <a href="https://bib.umontreal.ca/obtenir/numerisation"> demande de numérisation</a>.
     </div>
 
     <script>
@@ -696,10 +701,16 @@
                 : '<span class="no-data">No website</span>';
 
             const subjectsCell = entity.subjects.length > 0
-                ? `<div class="subject-tags">${entity.subjects.map(s => 
-                    `<span class="subject-tag">${s.label}</span>`
-                  ).join('')}</div>`
-                : '<span class="no-data">No subjects</span>';
+				? `<div class="subject-tags">${
+					entity.subjects
+					  .filter(s => !["Q1066186",    // remove study of history
+					                 "Q309",        // remove history
+									 ].includes(s.id)) // remove unwanted QIDs for better readability of the table 
+					  .map(s => `<span class="subject-tag">${s.label}</span>`)
+					  .join('')
+				  }</div>`
+				: '<span class="no-data">No subjects</span>';
+
 
             row.innerHTML = `
                 <td><a href="https://www.wikidata.org/wiki/${entity.qid}" target="_blank" class="qid-link">${entity.qid}</a></td>
