@@ -10,8 +10,12 @@
     <p>Un code JavaScript exécuté dans le navigateur de l'utilisateur interroge Wikidata et récupère les données des QIDs demandés. Il les présente dans un tableau avec des filtres basés sur une liste d'autorité de certains <i>Main subjects</i> (P921).</p>
     <p>Ce programme a été <i>vibe coded</i> avec Claude Opus 4.1 d'abord puis avec ChatGPT 4.x en août 2025. Les données de Wikidata ont été améliorées pour répondre aux besoins du programme, principalement avec P921.</p>
   <h1>Curation</h1>
-    <p>Le tableau des revues existait sous la forme d'un document PDF mis à jour annuellement sur le guide histoire des Bibliothèques UdeM. Il a été conçu par Marie-Ève Ménard et amélioré par Émilie Dalpé.</p>
-    <p>Dans ce projet, le bibliothécaire sélectionne les QIDs des revues, puis il dresse une liste des sujets principaux pour créer des boutons de filtres, puis il choisit les données à afficher dans le tableau. Pour que le projet fonctionne, il indexe les éléments Wikidata des revues. Ensuite, il mets ces éléments dans sa liste de surveillance (pour surveiller les contributions futures et le vandalisme).</p>
+    <h2>Liste du bibliothécaire (370+)</h2>
+        <p>Le tableau des revues existait sous la forme d'un document PDF mis à jour annuellement sur le guide histoire des Bibliothèques UdeM. Il a été conçu par Marie-Ève Ménard et amélioré par Émilie Dalpé. Ce tableau a été versé dans OpenRefine et les QIDs des revues ont été alignées (complètement). Quelques contributions ont été faites pour améliorer les données des revues. Les revues ont été ajoutées à la liste de suivi (watchlist) pour surveiller les contributions futures et le vandalisme.</p>
+    <h2>Liste «histoire» du ScimagoJR (1800+)</h2>
+        <p>Les données ont été téléchargées depuis <a href="https://www.scimagojr.com/journalrank.php">ScimagoJR</a> > Arts & Humanities > History : Download data. Puis elles ont été versées dans OpenRefine et les QIDs des revues ont été alignés (partiellement).Puis elles ont été versées dans OpenRefine, seulement les données "history" ont été sélectionnées dans la colonne Subjects. Les QIDs des revues ont été alignés (partiellement).</p>
+    <h2>Liste «histoire» du DOAJ (1500+)</h2>
+        <p>Les données ont été téléchargées depuis le CSV data dump du <a href="https://doaj.org/docs/public-data-dump/">DOAJ</a>. Puis elles ont été versées dans OpenRefine, seules les données "history" ont été sélectionnées dans la colonne Subjects. Les QIDs des revues ont été alignés (partiellement).</p>
   <h1>Prochaines étapes</h1>
     <ul>
         <li>Ajouter d'autres filtres P921 pour correspondre à la recherche au Département.</li>
