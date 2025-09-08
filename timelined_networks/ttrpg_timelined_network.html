@@ -309,12 +309,16 @@
 <div class="container">
         <h1>TTRPG Timelined Citation Network</h1>
         
-        <p>Customize the citation property and entity types to explore different networks. Submit the Wikidata QID of 
-		a work. Click Build and watch the chain of citations 
-		between games that acknowledges their inspirations, tributes, hommages, etc. in their rules. The data is retrieved 
-		from Wikidata with the property P2860 (cites).</p>
+        <p>This in-browser script retrieves and displays on a timeline all the backward citation network of a starting tabletop role-playing game element. By default, discover how <i>Apocalypse World 1st edition</i> by Vincent Baker is acknowledging inspirations, tributes, hommages, etc. within its rules. 
+        </p>
         
-
+            <div class="control-group">
+                <label>Quick presets:</label>
+				<button class="preset-btn" onclick="setPreset('apocalypseworld')">Apocalypse World 1st ed.</button>
+				<button class="preset-btn" onclick="setPreset('runequest')">Runequest (misc. editions)</button>
+				<button class="preset-btn" onclick="setPreset('dndholmes')">D&D Holmes</button>
+				<button class="preset-btn" onclick="setPreset('dnd5')">D&D 5th ed.</button>
+            </div>
             <div class="control-group">
                 <label>Relation Property:</label>
                 <input type="text" id="citation-property" class="property-input" value="P2860" placeholder="P2860">
@@ -325,29 +329,26 @@
                 <span class="help-text">Instance of (P31) entity types to include as QIDs separated by comma, space, or line breaks (default : TTRPG, TTRPG systems, TTRPG theory).</span>
             </div>
             
+
+
             <div class="control-group">
-                <button class="preset-btn" onclick="setPreset('ttrpg')">TTRPG Preset</button>
-                <span class="help-text">Quick presets for common use cases</span>
+                <label>Starting QID of a TTRPG:</label>
+                <input type="text" id="qid-input" placeholder="Enter starting QID" value="Q112134730">
+                <span class="help-text">(Root of the network to build)</span>
+                <label>Depth of crawling:</label>
+                <input type="number" id="max-depth" placeholder="Max depth" min="1" max="15" value="2">
+                <button onclick="buildNetwork()">🔍 Build Network</button>
+                <button onclick="clearNetwork()">🧹 Clear</button>
             </div>
 
-			<div class="control-group">
-				<label>QID of a TTRPG to built a timelined network of relations:</label>
-				<input type="text" id="qid-input" placeholder="Enter starting QID" value="Q112134730">
-                <span class="help-text">(default: Q112134730 is <br>Apocalypse World, 1st ed.,<br> by Vincent Baker)</span>
-				<label>Depth of crawling:</label>
-				<input type="number" id="max-depth" placeholder="Max depth" min="1" max="15" value="2">
-				<button onclick="buildNetwork()">🔍 Build Network</button>
-				<button onclick="clearNetwork()">🧹 Clear</button>
-			</div>
-
-        </div>
+        <div id="status" class="status"></div>
 
         <div class="layout-controls">
             <button class="toggle-btn active" id="timeline-btn" onclick="setLayout('timeline')">📅 Timeline Layout</button>
             <button class="toggle-btn" id="force-btn" onclick="setLayout('force')">🕸️ Force Layout</button>
         </div>
 
-        <div id="status" class="status"></div>
+
         
         <div id="network-container"></div>
         
@@ -396,20 +397,25 @@
         // Set preset configurations
         function setPreset(type) {
             switch(type) {
-                case 'ttrpg':
+                case 'apocalypseworld':
                     document.getElementById('qid-input').value = 'Q112134730';
                     document.getElementById('citation-property').value = 'P2860';
                     document.getElementById('filter-types').value = 'Q1643932, Q2164067, Q1472433';
                     break;
-                case 'academic':
-                    document.getElementById('qid-input').value = 'Q114437555';
+                case 'runequest':
+                    document.getElementById('qid-input').value = 'Q681338';
                     document.getElementById('citation-property').value = 'P2860';
-                    document.getElementById('filter-types').value = 'Q13442814, Q571, Q3331189, Q1266946, Q10383930, Q55915575, Q47461344';
+                    document.getElementById('filter-types').value = 'Q1643932, Q2164067, Q1472433';
                     break;
-                case 'shifu':
-                    document.getElementById('qid-input').value = 'Q189564';
-                    document.getElementById('citation-property').value = 'P1066'; // student of 
-                    document.getElementById('filter-types').value = 'Q5'; // human 
+                case 'dndholmes':
+                    document.getElementById('qid-input').value = 'Q64596999';
+                    document.getElementById('citation-property').value = 'P2860'; 
+                    document.getElementById('filter-types').value = 'Q1643932, Q2164067, Q1472433';
+                    break;
+                case 'dnd5':
+                    document.getElementById('qid-input').value = 'Q64706124';
+                    document.getElementById('citation-property').value = 'P2860';
+                    document.getElementById('filter-types').value = 'Q1643932, Q2164067, Q1472433'; 
                     break;
             }
             updateStatus(`Applied ${type} preset configuration`, 'success');
@@ -497,10 +503,24 @@
                     VALUES ?filtering { ${filterTypesValues} }
                     ?item wdt:P31 ?filtering.
                     OPTIONAL { ?item wdt:P577 ?pubDate . }
+                    OPTIONAL { ?item wdt:P571 ?incDate . }
+                    BIND(
+                            IF(BOUND(?pubDate) && BOUND(?incDate),
+                                IF(?pubDate < ?incDate, ?pubDate, ?incDate),
+                                COALESCE(?pubDate, ?incDate)
+                            ) AS ?pubDate
+                        )
                     OPTIONAL {
                         ?item wdt:${config.citationProperty} ?cited .
                         ?cited wdt:P31 ?filtering.
                         OPTIONAL { ?cited wdt:P577 ?citedPubDate . }
+                        OPTIONAL { ?cited wdt:P571 ?citedIncDate . }
+                        BIND(
+                                IF(BOUND(?citedPubDate) && BOUND(?citedIncDate),
+                                    IF(?citedPubDate < ?citedIncDate, ?citedPubDate, ?citedIncDate),
+                                    COALESCE(?citedPubDate, ?citedIncDate)
+                                ) AS ?citedPubDate
+                            )
                     }
                     SERVICE wikibase:label { bd:serviceParam wikibase:language "en" . }
                 }
@@ -1000,14 +1020,14 @@
         });
 
         // Initialize with TTRPG preset
-        setPreset('ttrpg');
-        updateStatus('Enter a starting QID and customize the configuration as needed');
+        setPreset('apocalypseworld');
+        updateStatus('Enter a preset or your own configuration as needed');
     </script>
 	<p>The data is retrieved from Wikidata using customizable properties and entity types. Use the presets 
 	for common configurations or customize your own. Toggle between Timeline Layout (chronological positioning) 
-	and Force Layout (network physics). Citations flowing backwards in time are highlighted in orange.</p>
-	<p>The data is retrieved from Wikidata with the property P2860 (<i>cites</i>). Only TTRPGs, or RPG theories, 
-	or RPG systems are retrieved. Nodes are only mentioned once (to improve). 
-	This tool is based on <a href="">CitationTree</a> by Nicolas Loizeau.</p>
+	and Force Layout (network physics). Citations flowing backwards in time are highlighted in orange. 
+	Some TTRPGs have all the citations of all editions 
+	while other TTRPGs have the citations of precise editions (it can explain citations to future works).</p>
+	<p>This tool is based on <a href="https://www.citationtree.org/">CitationTree</a> by Nicolas Loizeau, and <a href="https://www.entitree.com/">EntiTree</a> by Orlando Groppo & Martin Schibel.</p>
 </body>
 </html>
