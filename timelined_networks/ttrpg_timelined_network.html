@@ -382,6 +382,14 @@
             <div id="most-cited">Most Cited: -</div>
             <div id="date-range">Date Range: -</div>
         </div>
+		<p></p>
+		<p>The data is retrieved from Wikidata using customizable properties and entity types. Use the presets 
+		for common configurations or customize your own. Toggle between Timeline Layout (chronological positioning) 
+		and Force Layout (network physics). <br>
+		Citations flowing backwards in time are highlighted in orange. Citations flowing onward are colored grey and they are a bug in the data. Indeed, some TTRPGs list citations for all their editions combined, while others only include citations for specific editions (which can sometimes lead to references pointing to works published later). Contributions to improve this data on Wikidata are always welcome. Ideally, citations should be indexed at the edition level rather than merging all citations under a single element—a mistake I made early in the project and have been working to correct ever since. Single edition games are the easiest to index since I consider them as one element only.</p>
+		<p>This tool is based on <a href="https://www.citationtree.org/">CitationTree</a> by Nicolas Loizeau, and <a href="https://www.entitree.com/">EntiTree</a> by Orlando Groppo & Martin Schibel.<br>
+		The JavaScript code can be (quite) easily adapted to other needs. If you do so, thank you for citing with something like this : Martinolli, Pascal. 2025. TTRPG Timelined Citation Network ». JavaScript and Wikidata. Part of <i><a href="https://pmartinolli.github.io/#tabletop-role-playing-games-studies">On the Shoulders of Cloud Giants</a></i> project. 
+		
     </div>
 
     <script>
@@ -1023,11 +1031,6 @@
         setPreset('apocalypseworld');
         updateStatus('Enter a preset or your own configuration as needed');
     </script>
-	<p>The data is retrieved from Wikidata using customizable properties and entity types. Use the presets 
-	for common configurations or customize your own. Toggle between Timeline Layout (chronological positioning) 
-	and Force Layout (network physics). Citations flowing backwards in time are highlighted in orange. 
-	Some TTRPGs have all the citations of all editions 
-	while other TTRPGs have the citations of precise editions (it can explain citations to future works).</p>
-	<p>This tool is based on <a href="https://www.citationtree.org/">CitationTree</a> by Nicolas Loizeau, and <a href="https://www.entitree.com/">EntiTree</a> by Orlando Groppo & Martin Schibel.</p>
+
 </body>
 </html>
