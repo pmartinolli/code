@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTRPG Citation Tree</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        input[type="text"] {
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            width: 200px;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 15px rgba(102, 126, 234, 0.3);
+        }
+
+        button {
+            padding: 12px 25px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .status {
+            text-align: center;
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 10px;
+            min-height: 20px;
+        }
+
+        .status.loading {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .status.success {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        #tree-container {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #ddd;
+            border-radius: 15px;
+            overflow: hidden;
+            background: #fafafa;
+            position: relative;
+        }
+
+        .node circle {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .node circle:hover {
+            r: 8;
+            stroke-width: 3px;
+        }
+
+        .node text {
+            font-size: 12px;
+            font-family: 'Segoe UI', sans-serif;
+            cursor: pointer;
+        }
+
+        .link {
+            fill: none;
+            stroke-width: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .link:hover {
+            stroke-width: 3px;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1000;
+            max-width: 200px;
+            word-wrap: break-word;
+        }
+
+        .legend {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .legend-item {
+            display: inline-flex;
+            align-items: center;
+            margin-right: 20px;
+            margin-bottom: 5px;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+        <h1>📊 TTRPG Citation Tree Explorer</h1>
+        
+        <p>Submit the Wikidata QID of a tabletop role-playing game (for example Q112134730 is <i>Apocalypse World, 1st ed.</i>, by Vincent Baker). 
+		Then submit the depth of crawling (between 1 and 15, default is 4). Click Build and watch the chain of citations between games that acknowledges
+		their inspirations, tributes, hommages, etc. in their rules.</p>
+        <div class="controls">
+            <input type="text" id="qid-input" placeholder="Enter QID (e.g., Q112134730)" value="Q112134730">
+            <input type="number" id="max-depth" placeholder="Max depth" min="1" max="15" value="4">
+            <button onclick="buildTree()">🔍 Build Citation Tree</button>
+            <button onclick="clearTree()">🧹 Clear</button>
+		</div>
+
+        <div id="status" class="status"></div>
+        
+        <div id="tree-container"></div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #4a90e2;"></div>
+                <span>Root Node</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #7ed321;"></div>
+                <span>Has Citations</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #f5a623;"></div>
+                <span>No Citations</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #d0021b;"></div>
+                <span>Error/Not Found</span>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div id="total-nodes">Total Nodes: 0</div>
+            <div id="total-citations">Total Citations: 0</div>
+            <div id="max-depth-reached">Max Depth: 0</div>
+        </div>
+    </div>
+
+    <script>
+        let treeData = null;
+        let svg = null;
+        let tooltip = null;
+
+        // Initialize SVG
+        function initSVG() {
+            const container = d3.select("#tree-container");
+            container.selectAll("*").remove();
+            
+            const width = container.node().getBoundingClientRect().width;
+            const height = container.node().getBoundingClientRect().height;
+            
+            svg = container.append("svg")
+                .attr("width", width)
+                .attr("height", height);
+                
+            // Add zoom functionality
+            const g = svg.append("g");
+            const zoom = d3.zoom()
+                .scaleExtent([0.1, 3])
+                .on("zoom", (event) => {
+                    g.attr("transform", event.transform);
+                });
+            svg.call(zoom);
+
+            // Create tooltip
+            tooltip = d3.select("body").append("div")
+                .attr("class", "tooltip")
+                .style("opacity", 0);
+
+            return { svg, g, width, height };
+        }
+
+        // Fetch data from Wikidata SPARQL endpoint
+		// retrieve QID that are TTRPG (Q1643932) or TTRPG theory (Q1472433) or TTRPG systems (Q2164067)
+        async function fetchQIDData(qid) {
+            const sparqlQuery = `
+                SELECT ?item ?itemLabel ?cited ?citedLabel WHERE {
+                    VALUES ?item { wd:${qid} }
+                    VALUES ?filtering { wd:Q1643932  wd:Q2164067 wd:Q1472433 }
+                    ?item wdt:P31 ?filtering.
+                    OPTIONAL {
+                        ?item wdt:P2860 ?cited .
+                    }
+                    SERVICE wikibase:label { bd:serviceParam wikibase:language "en" . }
+                }
+            `;
+            
+            const url = 'https://query.wikidata.org/sparql?' + new URLSearchParams({
+                query: sparqlQuery,
+                format: 'json'
+            });
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                const bindings = data.results.bindings;
+                
+                if (bindings.length === 0) {
+                    throw new Error('QID not found');
+                }
+
+                // Get main item info
+                const mainItem = bindings[0];
+                const itemInfo = {
+                    qid: qid,
+                    label: mainItem.itemLabel ? mainItem.itemLabel.value : qid,
+                    citations: []
+                };
+
+                // Get citations
+                const citedItems = new Set();
+                bindings.forEach(binding => {
+                    if (binding.cited) {
+                        const citedQID = binding.cited.value.split('/').pop();
+                        const citedLabel = binding.citedLabel ? binding.citedLabel.value : citedQID;
+                        
+                        if (!citedItems.has(citedQID)) {
+                            citedItems.add(citedQID);
+                            itemInfo.citations.push({
+                                qid: citedQID,
+                                label: citedLabel
+                            });
+                        }
+                    }
+                });
+
+                return itemInfo;
+            } catch (error) {
+                console.error(`Error fetching ${qid}:`, error);
+                return {
+                    qid: qid,
+                    label: `${qid} (Error)`,
+                    citations: [],
+                    error: true
+                };
+            }
+        }
+
+        // Build tree recursively with proper filtering
+        async function buildTreeRecursively(qid, maxDepth, currentDepth = 0, visited = new Set()) {
+            if (currentDepth >= maxDepth || visited.has(qid)) {
+                return null;
+            }
+
+            visited.add(qid);
+            updateStatus(`Fetching ${qid} (depth ${currentDepth + 1}/${maxDepth})...`, 'loading');
+
+            const itemData = await fetchQIDData(qid);
+            
+            if (itemData.error) {
+                return null; // Skip items that don't meet the filtering criteria
+            }
+            
+            const node = {
+                name: itemData.label,
+                qid: itemData.qid,
+                error: itemData.error || false,
+                depth: currentDepth,
+                children: [],
+                totalCitations: itemData.totalCitations,
+                filteredCitations: itemData.filteredCitations
+            };
+
+            // Add small delay to avoid overwhelming the API
+            await new Promise(resolve => setTimeout(resolve, 200));
+
+            // Recursively fetch children (only from filtered citations)
+            for (const citation of itemData.citations.slice(0, 10)) { // Limit to 10 citations per node
+                const childNode = await buildTreeRecursively(citation.qid, maxDepth, currentDepth + 1, visited);
+                if (childNode) {
+                    node.children.push(childNode);
+                }
+            }
+
+            return node;
+        }
+
+        // Main function to build and visualize tree
+        async function buildTree() {
+            const qidInput = document.getElementById('qid-input').value.trim();
+            const maxDepthInput = parseInt(document.getElementById('max-depth').value) || 2;
+            
+            if (!qidInput) {
+                updateStatus('Please enter a QID', 'error');
+                return;
+            }
+
+            // Validate QID format
+            const qidRegex = /^Q\d+$/i;
+            if (!qidRegex.test(qidInput)) {
+                updateStatus('Please enter a valid QID format (e.g., Q42)', 'error');
+                return;
+            }
+
+            const qid = qidInput.toUpperCase();
+            
+            try {
+                updateStatus('Building citation tree...', 'loading');
+                
+                treeData = await buildTreeRecursively(qid, maxDepthInput);
+                
+                if (!treeData) {
+                    updateStatus('No data found or maximum depth reached immediately', 'error');
+                    return;
+                }
+
+                visualizeTree(treeData);
+                updateStatus(`Tree built successfully! Root: ${treeData.name}`, 'success');
+                updateStats(treeData);
+                
+            } catch (error) {
+                console.error('Error building tree:', error);
+                updateStatus('Error building tree: ' + error.message, 'error');
+            }
+        }
+
+        // Visualize tree using D3
+        function visualizeTree(data) {
+            const { svg, g, width, height } = initSVG();
+
+            const tree = d3.tree().size([width - 100, height - 100]);
+            const root = d3.hierarchy(data);
+            
+            tree(root);
+
+            // Create links
+            const links = g.selectAll('.link')
+                .data(root.links())
+                .enter().append('path')
+                .attr('class', 'link')
+                .attr('d', d3.linkHorizontal()
+                    .x(d => d.y + 50)
+                    .y(d => d.x + 50))
+                .style('stroke', '#999')
+                .style('stroke-opacity', 0.6);
+
+            // Create nodes
+            const nodes = g.selectAll('.node')
+                .data(root.descendants())
+                .enter().append('g')
+                .attr('class', 'node')
+                .attr('transform', d => `translate(${d.y + 50},${d.x + 50})`);
+
+            // Add circles
+            nodes.append('circle')
+                .attr('r', 6)
+                .style('fill', d => {
+                    if (d.depth === 0) return '#4a90e2'; // Root
+                    if (d.data.error) return '#d0021b'; // Error
+                    if (d.children && d.children.length > 0) return '#7ed321'; // Has children
+                    return '#f5a623'; // Leaf node
+                })
+                .style('stroke', '#fff')
+                .style('stroke-width', 2);
+
+            // Add labels
+            nodes.append('text')
+                .attr('dx', d => d.children ? -12 : 12)
+                .attr('dy', 4)
+                .style('text-anchor', d => d.children ? 'end' : 'start')
+                .style('font-size', '11px')
+                .text(d => {
+                    const maxLength = 20;
+                    return d.data.name.length > maxLength 
+                        ? d.data.name.substring(0, maxLength) + '...' 
+                        : d.data.name;
+                });
+
+            // Add tooltips and click events
+            nodes
+                .on('mouseover', function(event, d) {
+                    tooltip.transition().duration(200).style('opacity', .9);
+                    tooltip.html(`
+                        <strong>${d.data.name}</strong><br/>
+                        QID: ${d.data.qid}<br/>
+                        Depth: ${d.data.depth}<br/>
+                        Citations: ${d.data.children ? d.data.children.length : 0}
+                    `)
+                    .style('left', (event.pageX + 10) + 'px')
+                    .style('top', (event.pageY - 28) + 'px');
+                })
+                .on('mouseout', function() {
+                    tooltip.transition().duration(500).style('opacity', 0);
+                })
+                .on('click', function(event, d) {
+                    window.open(`https://www.wikidata.org/wiki/${d.data.qid}`, '_blank');
+                });
+        }
+
+        // Update status message
+        function updateStatus(message, type = '') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+        }
+
+        // Update statistics
+        function updateStats(data) {
+            let totalNodes = 0;
+            let totalCitations = 0;
+            let maxDepth = 0;
+
+            function traverse(node) {
+                totalNodes++;
+                maxDepth = Math.max(maxDepth, node.depth);
+                if (node.children) {
+                    totalCitations += node.children.length;
+                    node.children.forEach(traverse);
+                }
+            }
+
+            traverse(data);
+
+            document.getElementById('total-nodes').textContent = `Total Nodes: ${totalNodes}`;
+            document.getElementById('total-citations').textContent = `Total Citations: ${totalCitations}`;
+            document.getElementById('max-depth-reached').textContent = `Max Depth: ${maxDepth + 1}`;
+        }
+
+        // Clear tree
+        function clearTree() {
+            d3.select("#tree-container").selectAll("*").remove();
+            if (tooltip) tooltip.remove();
+            updateStatus('');
+            document.getElementById('total-nodes').textContent = 'Total Nodes: 0';
+            document.getElementById('total-citations').textContent = 'Total Citations: 0';
+            document.getElementById('max-depth-reached').textContent = 'Max Depth: 0';
+        }
+
+        // Handle Enter key in input
+        document.getElementById('qid-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                buildTree();
+            }
+        });
+
+        // Initialize
+        updateStatus('Enter a QID for a research article, conference paper, or book chapter to start exploring citation networks');
+    </script>
+	<p>The data is retrieved from Wikidata with the property P2860 (<i>cites</i>). Only TTRPGs, or RPG theories, or RPG systems are retrieved. Nodes are only mentioned once (to improve). This tool is based on <a href="">CitationTree</a> by Nicolas Loizeau.</p>
+</body>
+</html>
