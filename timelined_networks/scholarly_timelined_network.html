@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scholarly Citation Timeline</title>
+    <title>Scholarly Timelined Citation Network</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
     <style>
         body {
@@ -309,46 +309,39 @@
 <div class="container">
         <h1>Scholarly Timelined Citation Network</h1>
         
-        <p>Customize the citation property and entity types to explore different networks. </p>
-        
         <div class="controls">
+		     <label>Starting article QID:</label>
             <input type="text" id="qid-input" placeholder="Enter starting QID" value="Q114437555">
-            <input type="number" id="max-depth" placeholder="Max depth" min="1" max="15" value="2">
-            <button onclick="buildNetwork()">🔍 Build Network</button>
-            <button onclick="clearNetwork()">🧹 Clear</button>
-        </div>
-
-        <div class="advanced-controls">
-            <h3>Advanced Configuration</h3>
-            
-            <div class="control-group">
+			<label>Depth of crawling (1-5):</label>
+            <input type="number" id="max-depth" placeholder="Max depth" min="1" max="5" value="2">
+		</div>
+		<div class="controls">
                 <label>Citation Property:</label>
                 <input type="text" id="citation-property" class="property-input" value="P2860" placeholder="P2860">
                 <span class="help-text">Property for citations (default: P2860 "cites work")</span>
-                <!--<button class="preset-btn" onclick="setPreset('academic')">Academic Papers</button>-->
-            </div>
+                <label>Filter only these type(s):</label>
+                <textarea id="filter-types" rows="3" placeholder="Q13442814">Q13442814</textarea>
+				<!-- , Q571, Q3331189, Q1266946, Q10383930, Q55915575, Q47461344 
+				Entity types to include (QIDs separated by comma, space, or line breaks)-->
+                <span class="help-text">Only scholarly article are retrieved (see below)</span>
+        </div>
             
-            <div class="control-group">
-                <label>Filter Types:</label>
-                <textarea id="filter-types" rows="3" placeholder="Q13442814, Q571, Q3331189, Q1266946, Q10383930, Q55915575, Q47461344">Q13442814, Q571, Q3331189, Q1266946, Q10383930, Q55915575, Q47461344</textarea>
-                <span class="help-text">Entity types to include (QIDs separated by comma, space, or line breaks)</span>
-            </div>
-            
-            <div class="control-group">
-                <!--<button class="preset-btn" onclick="setPreset('ttrpg')">TTRPG Preset</button>
-                <button class="preset-btn" onclick="setPreset('shifu')">Shifu Preset</button>-->
-                <button class="preset-btn" onclick="setPreset('academic')">Academic Preset</button>
+        <div class="control-group">
+                <button class="preset-btn" onclick="setPreset('academic')">Preset 1</button>
+                <button class="preset-btn" onclick="setPreset('turing')">Turing 1950</button>
+                <button class="preset-btn" onclick="setPreset('neumann')">Neumann 1928</button>
 
                 <span class="help-text">Quick presets for common use cases</span>
-            </div>
+            <button onclick="buildNetwork()">🔍 Build Network</button>
+            <button onclick="clearNetwork()">🧹 Clear</button>
         </div>
-
         <div class="layout-controls">
             <button class="toggle-btn active" id="timeline-btn" onclick="setLayout('timeline')">📅 Timeline Layout</button>
             <button class="toggle-btn" id="force-btn" onclick="setLayout('force')">🕸️ Force Layout</button>
         </div>
+		
+		<div id="status" class="status"></div>
 
-        <div id="status" class="status"></div>
         
         <div id="network-container"></div>
         
@@ -382,6 +375,17 @@
             <div id="most-cited">Most Cited: -</div>
             <div id="date-range">Date Range: -</div>
         </div>
+		
+				<p>The data is retrieved from Wikidata using customizable properties and entity types. Use the presets 
+		for common configurations or customize your own. Toggle between Timeline Layout (chronological positioning) 
+		and Force Layout (network physics). <br>
+		Since the spliting of Wikidata graph, only scholarly articles are retrieved.</p>
+		<p>This tool is based on <a href="https://www.citationtree.org/">CitationTree</a> by Nicolas Loizeau, and 
+		<a href="https://www.entitree.com/">EntiTree</a> by Orlando Groppo & Martin Schibel.<br>
+		The JavaScript code can be (quite) easily adapted to other needs. If you do so, thank you for citing with something like this : 
+		Martinolli, Pascal. 2025. « <a href="https://pmartinolli.github.io/">Scholarly Timelined 
+		Citation Network</a> ». JavaScript and Wikidata.</p>
+
     </div>
 
     <script>
@@ -400,17 +404,17 @@
                 case 'academic':
                     document.getElementById('qid-input').value = 'Q114437555';
                     document.getElementById('citation-property').value = 'P2860';
-                    document.getElementById('filter-types').value = 'Q13442814, Q571, Q3331189, Q1266946, Q10383930, Q55915575, Q47461344';
+                    document.getElementById('filter-types').value = 'Q13442814';
                     break;
-                case 'ttrpg':
-                    document.getElementById('qid-input').value = 'Q112134730';
+                case 'turing':
+                    document.getElementById('qid-input').value = 'Q772056';
                     document.getElementById('citation-property').value = 'P2860';
-                    document.getElementById('filter-types').value = 'Q1643932, Q2164067, Q1472433';
+                    document.getElementById('filter-types').value = 'Q13442814';
                     break;
-                case 'shifu':
-                    document.getElementById('qid-input').value = 'Q189564';
-                    document.getElementById('citation-property').value = 'P1066'; // student of 
-                    document.getElementById('filter-types').value = 'Q5'; // human 
+                case 'neumann':
+                    document.getElementById('qid-input').value = 'Q55867220';
+                    document.getElementById('citation-property').value = 'P2860'; 
+                    document.getElementById('filter-types').value = 'Q13442814, Q3331189, Q11826511'; 
                     break;
             }
             updateStatus(`Applied ${type} preset configuration`, 'success');
@@ -498,10 +502,24 @@
                     VALUES ?filtering { ${filterTypesValues} }
                     ?item wdt:P31 ?filtering.
                     OPTIONAL { ?item wdt:P577 ?pubDate . }
+                    OPTIONAL { ?item wdt:P571 ?incDate . }
+                    BIND(
+                            IF(BOUND(?pubDate) && BOUND(?incDate),
+                                IF(?pubDate < ?incDate, ?pubDate, ?incDate),
+                                COALESCE(?pubDate, ?incDate)
+                            ) AS ?pubDate
+                        )
                     OPTIONAL {
                         ?item wdt:${config.citationProperty} ?cited .
                         ?cited wdt:P31 ?filtering.
                         OPTIONAL { ?cited wdt:P577 ?citedPubDate . }
+                        OPTIONAL { ?cited wdt:P571 ?citedIncDate . }
+                        BIND(
+                                IF(BOUND(?citedPubDate) && BOUND(?citedIncDate),
+                                    IF(?citedPubDate < ?citedIncDate, ?citedPubDate, ?citedIncDate),
+                                    COALESCE(?citedPubDate, ?citedIncDate)
+                                ) AS ?citedPubDate
+                            )
                     }
                     SERVICE wikibase:label { bd:serviceParam wikibase:language "en" . }
                 }
@@ -1004,6 +1022,5 @@
         setPreset('academic');
         updateStatus('Enter a starting QID and customize the configuration as needed');
     </script>
-	<p>The data is retrieved from Wikidata using customizable properties and entity types. Use the presets for common configurations or customize your own. Toggle between Timeline Layout (chronological positioning) and Force Layout (network physics). Citations flowing backwards in time are highlighted in orange.</p>
 </body>
 </html>

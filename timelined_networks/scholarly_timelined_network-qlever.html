@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customizable Citation Timeline</title>
+    <title>Scholarly Timelined Citation Network</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
     <style>
         body {
@@ -53,7 +53,7 @@
             display: flex;
             gap: 15px;
             margin-bottom: 15px;
-            align-items: center;
+            align-items: flex-start;
             flex-wrap: wrap;
         }
 
@@ -65,6 +65,7 @@
             font-weight: bold;
             min-width: 120px;
             color: #555;
+            margin-top: 12px;
         }
 
         input[type="text"] {
@@ -82,12 +83,25 @@
             box-shadow: 0 0 15px rgba(102, 126, 234, 0.3);
         }
 
-        .qid-input {
-            width: 120px;
-        }
-
         .property-input {
             width: 80px;
+        }
+
+        textarea {
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 14px;
+            width: 350px;
+            font-family: monospace;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 15px rgba(102, 126, 234, 0.3);
         }
 
         button {
@@ -287,54 +301,47 @@
             color: #666;
             margin-left: 10px;
             font-style: italic;
+            flex: 1;
         }
     </style>
 </head>
 <body>
 <div class="container">
-        <h1>🔧 Customizable Citation Timeline Network</h1>
-        
-        <p>Customize the citation property and entity types to explore different networks. Default settings are for TTRPGs, but you can modify them for other domains.</p>
+        <h1>Scholarly Timelined Citation Network</h1>
         
         <div class="controls">
-            <input type="text" id="qid-input" placeholder="Enter starting QID" value="Q112134730">
-            <input type="number" id="max-depth" placeholder="Max depth" min="1" max="15" value="4">
-            <button onclick="buildNetwork()">🔍 Build Network</button>
-            <button onclick="clearNetwork()">🧹 Clear</button>
-        </div>
-
-        <div class="advanced-controls">
-            <h3>Advanced Configuration</h3>
-            
-            <div class="control-group">
+		     <label>Starting article QID:</label>
+            <input type="text" id="qid-input" placeholder="Enter starting QID" value="Q114437555">
+			<label>Depth of crawling (1-5):</label>
+            <input type="number" id="max-depth" placeholder="Max depth" min="1" max="5" value="2">
+		</div>
+		<div class="controls">
                 <label>Citation Property:</label>
                 <input type="text" id="citation-property" class="property-input" value="P2860" placeholder="P2860">
                 <span class="help-text">Property for citations (default: P2860 "cites work")</span>
-                <button class="preset-btn" onclick="setPreset('academic')">Academic Papers</button>
-            </div>
-            
-            <div class="control-group">
-                <label>Filter Types:</label>
-                <input type="text" id="filter-type-1" class="qid-input" value="Q1643932" placeholder="Q1643932">
-                <input type="text" id="filter-type-2" class="qid-input" value="Q2164067" placeholder="Q2164067">
-                <input type="text" id="filter-type-3" class="qid-input" value="Q1472433" placeholder="Q1472433">
-                <span class="help-text">Entity types to include (default: research article, conference paper, book chapter)</span>
-            </div>
-            
-            <div class="control-group">
-                <button class="preset-btn" onclick="setPreset('ttrpg')">TTRPG Preset</button>
-                <button class="preset-btn" onclick="setPreset('academic')">Academic Preset</button>
-                <button class="preset-btn" onclick="setPreset('books')">Books Preset</button>
-                <span class="help-text">Quick presets for common use cases</span>
-            </div>
+                <label>Filter only these type(s):</label>
+                <textarea id="filter-types" rows="3" placeholder="Q13442814">Q13442814</textarea>
+				<!-- , Q571, Q3331189, Q1266946, Q10383930, Q55915575, Q47461344 
+				Entity types to include (QIDs separated by comma, space, or line breaks)-->
+                <span class="help-text">Only scholarly article are retrieved (see below)</span>
         </div>
+            
+        <div class="control-group">
+                <button class="preset-btn" onclick="setPreset('academic')">Preset 1</button>
+                <button class="preset-btn" onclick="setPreset('turing')">Turing 1950</button>
+                <button class="preset-btn" onclick="setPreset('neumann')">Neumann 1928</button>
 
+                <span class="help-text">Quick presets for common use cases</span>
+            <button onclick="buildNetwork()">🔍 Build Network</button>
+            <button onclick="clearNetwork()">🧹 Clear</button>
+        </div>
         <div class="layout-controls">
             <button class="toggle-btn active" id="timeline-btn" onclick="setLayout('timeline')">📅 Timeline Layout</button>
             <button class="toggle-btn" id="force-btn" onclick="setLayout('force')">🕸️ Force Layout</button>
         </div>
+		
+		<div id="status" class="status"></div>
 
-        <div id="status" class="status"></div>
         
         <div id="network-container"></div>
         
@@ -368,6 +375,17 @@
             <div id="most-cited">Most Cited: -</div>
             <div id="date-range">Date Range: -</div>
         </div>
+		
+				<p>The data is retrieved from Wikidata using customizable properties and entity types. Use the presets 
+		for common configurations or customize your own. Toggle between Timeline Layout (chronological positioning) 
+		and Force Layout (network physics). <br>
+		Since the spliting of Wikidata graph, only scholarly articles are retrieved.</p>
+		<p>This tool is based on <a href="https://www.citationtree.org/">CitationTree</a> by Nicolas Loizeau, and 
+		<a href="https://www.entitree.com/">EntiTree</a> by Orlando Groppo & Martin Schibel.<br>
+		The JavaScript code can be (quite) easily adapted to other needs. If you do so, thank you for citing with something like this : 
+		Martinolli, Pascal. 2025. « <a href="https://pmartinolli.github.io/">Scholarly Timelined 
+		Citation Network</a> ». JavaScript and Wikidata.</p>
+
     </div>
 
     <script>
@@ -383,23 +401,20 @@
         // Set preset configurations
         function setPreset(type) {
             switch(type) {
-                case 'ttrpg':
-                    document.getElementById('citation-property').value = 'P2860';
-                    document.getElementById('filter-type-1').value = 'Q1643932';
-                    document.getElementById('filter-type-2').value = 'Q2164067';
-                    document.getElementById('filter-type-3').value = 'Q1472433';
-                    break;
                 case 'academic':
+                    document.getElementById('qid-input').value = 'Q114437555';
                     document.getElementById('citation-property').value = 'P2860';
-                    document.getElementById('filter-type-1').value = 'Q13442814'; // scholarly article
-                    document.getElementById('filter-type-2').value = 'Q571'; // book
-                    document.getElementById('filter-type-3').value = 'Q1266946'; // thesis
+                    document.getElementById('filter-types').value = 'Q13442814';
                     break;
-                case 'books':
+                case 'turing':
+                    document.getElementById('qid-input').value = 'Q772056';
                     document.getElementById('citation-property').value = 'P2860';
-                    document.getElementById('filter-type-1').value = 'Q571'; // book
-                    document.getElementById('filter-type-2').value = 'Q277759'; // book series
-                    document.getElementById('filter-type-3').value = 'Q7725634'; // literary work
+                    document.getElementById('filter-types').value = 'Q13442814';
+                    break;
+                case 'neumann':
+                    document.getElementById('qid-input').value = 'Q55867220';
+                    document.getElementById('citation-property').value = 'P2860'; 
+                    document.getElementById('filter-types').value = 'Q13442814, Q3331189, Q11826511'; 
                     break;
             }
             updateStatus(`Applied ${type} preset configuration`, 'success');
@@ -407,13 +422,17 @@
 
         // Get current configuration from form
         function getCurrentConfig() {
+            const filterTypesText = document.getElementById('filter-types').value.trim();
+            
+            // Parse QIDs from text area (support comma, space, or line break separation)
+            const filterTypes = filterTypesText
+                .split(/[,\s\n]+/)
+                .map(qid => qid.trim())
+                .filter(qid => qid && /^Q\d+$/i.test(qid));
+            
             return {
                 citationProperty: document.getElementById('citation-property').value.trim() || 'P2860',
-                filterTypes: [
-                    document.getElementById('filter-type-1').value.trim(),
-                    document.getElementById('filter-type-2').value.trim(),
-                    document.getElementById('filter-type-3').value.trim()
-                ].filter(type => type && /^Q\d+$/i.test(type))
+                filterTypes: filterTypes
             };
         }
 
@@ -478,76 +497,88 @@
             const filterTypesValues = config.filterTypes.map(type => `wd:${type}`).join(' ');
             
             const sparqlQuery = `
+                PREFIX wd: <http://www.wikidata.org/entity/>
+                PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+                PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                
                 SELECT ?item ?itemLabel ?cited ?citedLabel ?pubDate ?citedPubDate WHERE {
-                    VALUES ?item { wd:${qid} }
-                    VALUES ?filtering { ${filterTypesValues} }
-                    ?item wdt:P31 ?filtering.
-                    OPTIONAL { ?item wdt:P577 ?pubDate . }
-                    OPTIONAL {
-                        ?item wdt:${config.citationProperty} ?cited .
-                        ?cited wdt:P31 ?filtering.
-                        OPTIONAL { ?cited wdt:P577 ?citedPubDate . }
-                    }
-                    SERVICE wikibase:label { bd:serviceParam wikibase:language "en" . }
+                  VALUES ?item { wd:${qid} }
+                  VALUES ?filtering { ${filterTypesValues} }
+
+                  ?item wdt:P31 ?filtering .
+                  OPTIONAL { ?item wdt:P577 ?pubDate . }
+
+                  OPTIONAL {
+                    ?item wdt:${config.citationProperty} ?cited .
+                    ?cited wdt:P31 ?filtering .
+                    OPTIONAL { ?cited wdt:P577 ?citedPubDate . }
+                  }
+
+                  # labels in English
+                  OPTIONAL { ?item rdfs:label ?itemLabel . FILTER (lang(?itemLabel) = "en") }
+                  OPTIONAL { ?cited rdfs:label ?citedLabel . FILTER (lang(?citedLabel) = "en") }
                 }
             `;
-            
-            const url = 'https://query.wikidata.org/sparql?' + new URLSearchParams({
-                query: sparqlQuery,
-                format: 'json'
-            });
 
             try {
-                const response = await fetch(url);
+                const response = await fetch('https://qlever.cs.uni-freiburg.de/api/wikidata', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                    'Accept': 'application/sparql-results+json'
+                  },
+                  body: new URLSearchParams({ query: sparqlQuery })
+                });
+
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                
+
                 const data = await response.json();
                 const bindings = data.results.bindings;
-                
+
                 if (bindings.length === 0) {
-                    throw new Error('QID not found or does not match filter criteria');
+                  throw new Error('QID not found or does not match filter criteria');
                 }
 
                 // Get main item info
                 const mainItem = bindings[0];
                 const itemInfo = {
-                    qid: qid,
-                    label: mainItem.itemLabel ? mainItem.itemLabel.value : qid,
-                    publicationDate: mainItem.pubDate ? new Date(mainItem.pubDate.value) : null,
-                    citations: []
+                  qid: qid,
+                  label: mainItem.itemLabel ? mainItem.itemLabel.value : qid,
+                  publicationDate: mainItem.pubDate ? new Date(mainItem.pubDate.value) : null,
+                  citations: []
                 };
 
                 // Get citations with their publication dates
                 const citedItems = new Set();
                 bindings.forEach(binding => {
-                    if (binding.cited) {
-                        const citedQID = binding.cited.value.split('/').pop();
-                        const citedLabel = binding.citedLabel ? binding.citedLabel.value : citedQID;
-                        const citedPubDate = binding.citedPubDate ? new Date(binding.citedPubDate.value) : null;
-                        
-                        if (!citedItems.has(citedQID)) {
-                            citedItems.add(citedQID);
-                            itemInfo.citations.push({
-                                qid: citedQID,
-                                label: citedLabel,
-                                publicationDate: citedPubDate
-                            });
-                        }
+                  if (binding.cited) {
+                    const citedQID = binding.cited.value.split('/').pop();
+                    const citedLabel = binding.citedLabel ? binding.citedLabel.value : citedQID;
+                    const citedPubDate = binding.citedPubDate ? new Date(binding.citedPubDate.value) : null;
+
+                    if (!citedItems.has(citedQID)) {
+                      citedItems.add(citedQID);
+                      itemInfo.citations.push({
+                        qid: citedQID,
+                        label: citedLabel,
+                        publicationDate: citedPubDate
+                      });
                     }
+                  }
                 });
 
                 return itemInfo;
-            } catch (error) {
+              } catch (error) {
                 console.error(`Error fetching ${qid}:`, error);
                 return {
-                    qid: qid,
-                    label: `${qid} (Error)`,
-                    publicationDate: null,
-                    citations: [],
-                    error: true
+                  qid: qid,
+                  label: `${qid} (Error)`,
+                  publicationDate: null,
+                  citations: [],
+                  error: true
                 };
+              }
             }
-        }
 
         // Build network data structure
         async function buildNetworkData(startQID, maxDepth) {
@@ -985,10 +1016,9 @@
             }
         });
 
-        // Initialize with TTRPG preset
-        setPreset('ttrpg');
+        // Initialize with academic preset
+        setPreset('academic');
         updateStatus('Enter a starting QID and customize the configuration as needed');
     </script>
-	<p>The data is retrieved from Wikidata using customizable properties and entity types. Use the presets for common configurations or customize your own. Toggle between Timeline Layout (chronological positioning) and Force Layout (network physics). Citations flowing backwards in time are highlighted in orange.</p>
 </body>
 </html>
