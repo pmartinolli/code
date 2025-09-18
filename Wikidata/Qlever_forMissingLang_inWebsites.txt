@@ -1,0 +1,26 @@
+# A Qlever query that find items in portuguese from portugal where the language of the website is not indicated as language is portuguese https://qlever.cs.uni-freiburg.de/wikidata/08VGxZ 
+
+
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX p: <http://www.wikidata.org/prop/>
+PREFIX ps: <http://www.wikidata.org/prop/statement/>
+PREFIX pq: <http://www.wikidata.org/prop/qualifier/>
+SELECT ?item ?itemLabel ?website WHERE {
+  # Find items with P856 (official website) containing ".pt"
+  ?item p:P856 ?websiteStatement .
+  ?websiteStatement ps:P856 ?website .
+  
+  # Filter for websites containing ".pt" (removed the trailing slash)
+  FILTER(CONTAINS(STR(?website), ".org/"))
+ 
+ ?item wdt:P407 wd:Q1860 .
+
+# country of origin (or P17 )
+ ?item wdt:P495 wd:Q145 # uk 
+  # Exclude items where the website statement has P407 (language) = Q5146 (Portuguese)
+  FILTER NOT EXISTS {
+    ?websiteStatement pq:P407 wd:Q1860 .
+  }
+  
