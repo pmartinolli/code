@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Scholarly Timeline Network</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      background: #f8f9fa;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      padding: 20px;
+    }
+    h1 { 
+      color: #333; 
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .controls {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+      align-items: end;
+      flex-wrap: wrap;
+    }
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    label {
+      font-weight: 600;
+      color: #555;
+    }
+    input, button {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .zoom-controls {
+      display: flex;
+      gap: 10px;
+      margin-left: auto;
+    }
+    .zoom-btn {
+      padding: 6px 12px;
+      font-size: 12px;
+      background: #6c757d;
+    }
+    .zoom-btn:hover {
+      background: #545b62;
+    }
+    #status { 
+      margin: 10px 0; 
+      font-size: 14px; 
+      padding: 10px;
+      border-radius: 4px;
+      background: #f1f3f4;
+    }
+    .svg-container {
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      overflow: hidden;
+      background: white;
+    }
+    svg { 
+      display: block;
+      cursor: grab;
+    }
+    svg:active {
+      cursor: grabbing;
+    }
+    .node {
+      cursor: pointer;
+      transition: r 0.2s ease;
+    }
+    .node:hover {
+      stroke: #ff6b6b;
+      stroke-width: 2px;
+    }
+    .link {
+      stroke: #999;
+      stroke-opacity: 0.6;
+      stroke-width: 1.5px;
+      transition: stroke-width 0.2s ease;
+    }
+    .link:hover {
+      stroke: #ff6b6b;
+      stroke-opacity: 0.8;
+      stroke-width: 2px;
+    }
+    .label {
+      font-size: 11px;
+      font-weight: 500;
+      pointer-events: none;
+      text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+      transition: font-size 0.2s ease, opacity 0.2s ease;
+    }
+    .timeline-axis {
+      font-size: 11px;
+    }
+    .timeline-axis .domain {
+      stroke: #333;
+      stroke-width: 2px;
+    }
+    .timeline-axis .tick line {
+      stroke: #666;
+    }
+    .date-cluster-info {
+      position: absolute;
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .stats {
+      display: flex;
+      gap: 20px;
+      margin-top: 10px;
+      font-size: 13px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Scholarly Timeline Network</h1>
+    <p>Experimental : genealogy by citations of early papers on game theory, starting by the seminal paper « Zur Theorie der Gesellschaftsspiele » by Von Neumann (1928).
+    
+    <div class="controls">
+      <div class="control-group">
+        <label for="startingEntity">Starting Entity (QID):</label>
+        <input type="text" id="startingEntity" placeholder="e.g. Q12345" value="Q55867220">
+      </div>
+      
+      <div class="control-group">
+        <label for="relationProperty">Relation Property (PID):</label>
+        <input type="text" id="relationProperty" placeholder="e.g. P737" value="P2860">
+      </div>
+      
+      <div class="control-group">
+        <label for="maxDepth">Max Depth:</label>
+        <input type="number" id="maxDepth" value="2" min="1" max="5">
+      </div>
+      
+      <div class="control-group">
+        <button onclick="executeQuery()">Run Query</button>
+      </div>
+      
+      <div class="zoom-controls">
+        <button class="zoom-btn" onclick="zoomToMostMentioned()">Zoom to High Citers</button>
+        <button class="zoom-btn" onclick="zoomIn()">Zoom In</button>
+        <button class="zoom-btn" onclick="zoomOut()">Zoom Out</button>
+        <button class="zoom-btn" onclick="resetZoom()">Reset View</button>
+        <button class="zoom-btn" onclick="fitToContent()">Fit All</button>
+        <div style="font-size: 11px; color: #666; margin-left: 10px; align-self: center;">
+          💡 Scroll wheel = vertical, Ctrl+scroll = zoom
+        </div>
+      </div>
+    </div>
+    
+    <div id="status"></div>
+    <div class="stats" id="stats"></div>
+    
+    <div class="svg-container">
+      <svg id="network" width="1360" height="700"></svg>
+    </div>
+    
+    <div class="date-cluster-info" id="tooltip"></div>
+  </div>
+  
+  <script>
+    const SPARQL_ENDPOINT = "https://qlever.cs.uni-freiburg.de/api/wikidata";
+    let graphData = { nodes: [], links: [] };
+    let simulation, xScale, svg, g, axisG, zoom;
+    let citationCounts = new Map();
+
+    function showStatus(message, type) {
+      const status = document.getElementById('status');
+      status.textContent = message;
+      status.style.color = type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : '#6c757d';
+      status.style.background = type === 'error' ? '#f8d7da' : type === 'success' ? '#d4edda' : '#f1f3f4';
+    }
+
+    function updateStats() {
+      const stats = document.getElementById('stats');
+      const nodesWithDates = graphData.nodes.filter(n => n.parsedDate).length;
+      const dateRange = xScale ? xScale.domain() : [null, null];
+      const rangeText = dateRange[0] && dateRange[1] ? 
+        `${dateRange[0].getFullYear()} - ${dateRange[1].getFullYear()}` : 'No dates';
+      
+      stats.innerHTML = `
+        <span>Nodes: ${graphData.nodes.length}</span>
+        <span>Links: ${graphData.links.length}</span>
+        <span>With Dates: ${nodesWithDates}</span>
+        <span>Date Range: ${rangeText}</span>
+      `;
+    }
+
+    function buildSparqlQuery() {
+      const startEntity = document.getElementById('startingEntity').value.trim();
+      const relationProperty = document.getElementById('relationProperty').value;
+      const maxDepth = document.getElementById('maxDepth').value;
+      
+      return `
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT DISTINCT ?item ?itemLabel ?cited ?citedLabel ?itemDate ?citedDate WHERE {
+  {
+    SELECT ?item WHERE {
+      wd:${startEntity} wdt:${relationProperty}* ?item .
+    }
+    LIMIT 100
+  }
+  
+  ?item wdt:${relationProperty} ?cited .
+  
+  OPTIONAL { ?item wdt:P577 ?itemDate . }
+  OPTIONAL { ?cited wdt:P577 ?citedDate . }
+  OPTIONAL { ?item rdfs:label ?itemLabel . FILTER(lang(?itemLabel) = "en") }
+  OPTIONAL { ?cited rdfs:label ?citedLabel . FILTER(lang(?citedLabel) = "en") }
+}
+ORDER BY ?itemDate
+LIMIT 500`;
+    }
+
+    async function executeQuery() {
+      try {
+        showStatus('Querying QLever endpoint...', 'loading');
+        
+        const query = buildSparqlQuery();
+        console.log('SPARQL Query:', query);
+        
+        const response = await fetch(SPARQL_ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/sparql-query',
+            'Accept': 'application/sparql-results+json',
+          },
+          body: query
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('Query results:', data);
+        
+        if (!data.results || !data.results.bindings || data.results.bindings.length === 0) {
+          showStatus('No results found. Try a different entity or property.', 'error');
+          return;
+        }
+        
+        processQueryResults(data.results.bindings);
+        renderGraph();
+        updateStats();
+        
+        showStatus(`Successfully loaded ${graphData.nodes.length} nodes and ${graphData.links.length} links`, 'success');
+        
+      } catch (error) {
+        console.error('Query failed:', error);
+        showStatus(`Query failed: ${error.message}`, 'error');
+      }
+    }
+
+    function processQueryResults(results) {
+      graphData = { nodes: [], links: [] };
+      const nodeMap = new Map();
+      citationCounts = new Map();
+
+      results.forEach(row => {
+        const item = row.item.value;
+        const cited = row.cited.value;
+        const itemLabel = row.itemLabel ? row.itemLabel.value : item.split('/').pop();
+        const citedLabel = row.citedLabel ? row.citedLabel.value : cited.split('/').pop();
+        const itemDate = row.itemDate ? row.itemDate.value : null;
+        const citedDate = row.citedDate ? row.citedDate.value : null;
+
+        // Count citations (out-degree) - how many documents each item cites
+        citationCounts.set(item, (citationCounts.get(item) || 0) + 1);
+
+        if (!nodeMap.has(item)) {
+          nodeMap.set(item, { id: item, label: itemLabel, date: itemDate });
+        }
+        if (!nodeMap.has(cited)) {
+          nodeMap.set(cited, { id: cited, label: citedLabel, date: citedDate });
+        }
+
+        graphData.links.push({ source: item, target: cited });
+      });
+
+      graphData.nodes = Array.from(nodeMap.values());
+      
+      // Add citation counts to nodes
+      graphData.nodes.forEach(node => {
+        node.citationCount = citationCounts.get(node.id) || 0;
+      });
+    }
+
+    function getMostCitingDocuments() {
+      if (citationCounts.size === 0) return null;
+      
+      // Get documents that cite the most (top 30%)
+      const sortedCitations = Array.from(citationCounts.entries())
+        .sort((a, b) => b[1] - a[1]);
+      
+      const topCount = Math.max(1, Math.ceil(sortedCitations.length * 0.3));
+      const topCiters = sortedCitations.slice(0, topCount).map(d => d[0]);
+      
+      // Get their dates
+      const topDates = graphData.nodes
+        .filter(n => topCiters.includes(n.id) && n.parsedDate)
+        .map(n => n.parsedDate);
+      
+      if (topDates.length === 0) return null;
+      
+      const minDate = d3.min(topDates);
+      const maxDate = d3.max(topDates);
+      
+      // Add some padding
+      const timeSpan = maxDate - minDate;
+      const padding = Math.max(365.25 * 24 * 60 * 60 * 1000, timeSpan * 0.2); // At least 1 year padding
+      
+      return [
+        new Date(minDate.getTime() - padding),
+        new Date(maxDate.getTime() + padding)
+      ];
+    }
+
+    function renderGraph() {
+      svg = d3.select("#network");
+      svg.selectAll("*").remove();
+      const width = +svg.attr("width");
+      const height = +svg.attr("height");
+
+      // Parse dates and calculate node importance
+      graphData.nodes.forEach(d => {
+        if (d.date) {
+          d.parsedDate = new Date(d.date);
+        } else {
+          d.parsedDate = null;
+        }
+        
+        // Calculate node importance (number of connections)
+        d.connections = graphData.links.filter(l => l.source === d.id || l.target === d.id).length;
+      });
+
+      // Get valid dates
+      const validDates = graphData.nodes
+        .map(d => d.parsedDate)
+        .filter(d => d instanceof Date && !isNaN(d));
+
+      if (validDates.length === 0) {
+        showStatus("No valid dates found for nodes.", "error");
+        return;
+      }
+
+      // Enhanced timeline scale with better range
+      xScale = d3.scaleTime()
+        .domain(d3.extent(validDates))
+        .range([80, width - 80]);
+
+      // Create main group for zooming
+      g = svg.append("g");
+
+      // Improved node positioning with clustering by date
+      const dateGroups = d3.group(
+        graphData.nodes.filter(d => d.parsedDate), 
+        d => d.parsedDate.getFullYear()
+      );
+
+      graphData.nodes.forEach((d, i) => {
+        if (d.parsedDate) {
+          d.x = xScale(d.parsedDate);
+          
+          // Cluster nodes by year with vertical spread
+          const year = d.parsedDate.getFullYear();
+          const yearNodes = dateGroups.get(year) || [d];
+          const nodeIndex = yearNodes.indexOf(d);
+          const totalInYear = yearNodes.length;
+          
+          // Create better vertical distribution
+          const baseY = height * 0.4;
+          const spread = Math.min(300, totalInYear * 25);
+          d.y = baseY + (nodeIndex - totalInYear / 2) * (spread / totalInYear) + Math.random() * 20 - 10;
+          
+        } else {
+          // Nodes without dates go to the side
+          d.x = width - 150 + Math.random() * 100;
+          d.y = 100 + (i % 20) * 25;
+        }
+        
+        d.fx = d.x; // Fix x position
+      });
+
+      // Enhanced links with better styling
+      const link = g.append("g")
+        .selectAll("line")
+        .data(graphData.links)
+        .enter().append("line")
+        .attr("class", "link")
+        .attr("x1", d => findNode(d.source).x)
+        .attr("y1", d => findNode(d.source).y)
+        .attr("x2", d => findNode(d.target).x)
+        .attr("y2", d => findNode(d.target).y);
+
+      // Enhanced nodes with size based on importance
+      const node = g.append("g")
+        .selectAll("circle")
+        .data(graphData.nodes)
+        .enter().append("circle")
+        .attr("class", "node")
+        .attr("cx", d => d.x)
+        .attr("cy", d => d.y)
+        .attr("r", d => Math.max(6, Math.min(15, 5 + d.connections)))
+        .attr("fill", d => {
+          if (!d.parsedDate) return "#95a5a6";
+          const maxCitations = Math.max(...graphData.nodes.map(n => n.citationCount));
+          if (maxCitations === 0) return "#3498db";
+          const intensity = d.citationCount / maxCitations;
+          return d3.interpolateViridis(intensity);
+        })
+        .on("mouseover", handleNodeHover)
+        .on("mouseout", handleNodeOut);
+
+      // Enhanced labels
+      const label = g.append("g")
+        .selectAll("text")
+        .data(graphData.nodes)
+        .enter().append("text")
+        .attr("class", "label")
+        .attr("x", d => d.x)
+        .attr("y", d => d.y - Math.max(8, Math.min(17, 7 + d.connections)))
+        .attr("text-anchor", "middle")
+        .text(d => d.label.length > 20 ? d.label.substring(0, 17) + "..." : d.label);
+
+      // Enhanced timeline axis
+      const xAxis = d3.axisBottom(xScale)
+        .ticks(Math.max(5, Math.min(15, width / 100)))
+        .tickFormat(d3.timeFormat("%Y"));
+        
+      axisG = svg.append("g")
+        .attr("class", "timeline-axis")
+        .attr("transform", `translate(0, ${height - 60})`)
+        .call(xAxis);
+
+      // Add axis label
+      svg.append("text")
+        .attr("x", width / 2)
+        .attr("y", height - 15)
+        .attr("text-anchor", "middle")
+        .style("font-size", "12px")
+        .style("font-weight", "600")
+        .style("fill", "#666")
+        .text("Publication Year");
+
+      // Enhanced zoom focused on timeline with vertical scrolling
+      zoom = d3.zoom()
+        .scaleExtent([0.1, 100])
+        .on("zoom", handleZoom);
+
+      svg.call(zoom);
+      
+      // Add mouse wheel scrolling for vertical movement
+      svg.on("wheel", function(event) {
+        event.preventDefault();
+        
+        const currentTransform = d3.zoomTransform(svg.node());
+        const sensitivity = 1.5;
+        
+        if (event.ctrlKey || event.metaKey) {
+          // Ctrl/Cmd + wheel = zoom (existing behavior)
+          const scaleFactor = event.deltaY > 0 ? 0.9 : 1.1;
+          const [mouseX, mouseY] = d3.pointer(event);
+          
+          const newScale = Math.min(100, Math.max(0.1, currentTransform.k * scaleFactor));
+          const newX = mouseX - (mouseX - currentTransform.x) * (newScale / currentTransform.k);
+          const newY = mouseY - (mouseY - currentTransform.y) * (newScale / currentTransform.k);
+          
+          svg.call(zoom.transform, d3.zoomIdentity.translate(newX, newY).scale(newScale));
+        } else {
+          // Regular wheel = vertical scroll
+          const deltaY = event.deltaY * sensitivity;
+          const newY = currentTransform.y - deltaY;
+          
+          svg.call(zoom.transform, d3.zoomIdentity.translate(currentTransform.x, newY).scale(currentTransform.k));
+        }
+      });
+      
+      // Add double-click to zoom in on timeline
+      svg.on("dblclick.zoom", function(event) {
+        const [mouseX] = d3.pointer(event);
+        const targetDate = xScale.invert(mouseX);
+        
+        // Zoom in on the clicked date
+        const currentTransform = d3.zoomTransform(svg.node());
+        const newScale = Math.min(20, currentTransform.k * 2);
+        const newX = mouseX - (mouseX - currentTransform.x) * (newScale / currentTransform.k);
+        
+        svg.transition()
+          .duration(500)
+          .call(zoom.transform, d3.zoomIdentity.translate(newX, currentTransform.y).scale(newScale));
+      });
+
+      // Add force simulation for better layout
+      simulation = d3.forceSimulation(graphData.nodes)
+        .force("link", d3.forceLink(graphData.links).id(d => d.id).strength(0.1))
+        .force("charge", d3.forceManyBody().strength(-100))
+        .force("collision", d3.forceCollide().radius(d => Math.max(8, 7 + d.connections)))
+        .force("y", d3.forceY(height * 0.4).strength(0.1))
+        .on("tick", () => {
+          link
+            .attr("x1", d => d.source.x)
+            .attr("y1", d => d.source.y)
+            .attr("x2", d => d.target.x)
+            .attr("y2", d => d.target.y);
+
+          node
+            .attr("cx", d => d.x)
+            .attr("cy", d => d.y);
+
+          label
+            .attr("x", d => d.x)
+            .attr("y", d => d.y - Math.max(8, Math.min(17, 7 + d.connections)));
+        });
+
+      // Stop simulation after a while
+      setTimeout(() => simulation.stop(), 3000);
+    }
+
+    function handleZoom(event) {
+      const transform = event.transform;
+      
+      // Apply zoom transform primarily to the timeline scale
+      const newXScale = transform.rescaleX(xScale);
+      
+      // Update node positions based on the new timeline scale and vertical offset
+      g.selectAll('.node')
+        .attr('cx', d => d.parsedDate ? newXScale(d.parsedDate) : d.x + transform.x)
+        .attr('cy', d => d.y + transform.y);
+        
+      g.selectAll('.label')
+        .attr('x', d => d.parsedDate ? newXScale(d.parsedDate) : d.x + transform.x)
+        .attr('y', d => (d.y + transform.y) - (Math.max(4, Math.min(12, 6 + Math.log(transform.k) * 1.5)) + (d.connections * 0.3)));
+        
+      // Update links based on new node positions
+      g.selectAll('.link')
+        .attr('x1', d => {
+          const sourceNode = findNode(d.source.id || d.source);
+          return sourceNode.parsedDate ? newXScale(sourceNode.parsedDate) : sourceNode.x + transform.x;
+        })
+        .attr('y1', d => {
+          const sourceNode = findNode(d.source.id || d.source);
+          return sourceNode.y + transform.y;
+        })
+        .attr('x2', d => {
+          const targetNode = findNode(d.target.id || d.target);
+          return targetNode.parsedDate ? newXScale(targetNode.parsedDate) : targetNode.x + transform.x;
+        })
+        .attr('y2', d => {
+          const targetNode = findNode(d.target.id || d.target);
+          return targetNode.y + transform.y;
+        });
+      
+      // Update axis with much more detailed ticks when zoomed in
+      const width = +svg.attr("width");
+      const domain = newXScale.domain();
+      const timeSpan = domain[1] - domain[0];
+      const yearsSpan = timeSpan / (365.25 * 24 * 60 * 60 * 1000);
+      
+      let tickFormat, tickInterval;
+      if (yearsSpan < 2) {
+        tickInterval = d3.timeMonth.every(1);
+        tickFormat = d3.timeFormat("%b %Y");
+      } else if (yearsSpan < 10) {
+        tickInterval = d3.timeMonth.every(6);
+        tickFormat = d3.timeFormat("%b %Y");
+      } else if (yearsSpan < 50) {
+        tickInterval = d3.timeYear.every(1);
+        tickFormat = d3.timeFormat("%Y");
+      } else {
+        tickInterval = d3.timeYear.every(Math.ceil(yearsSpan / 20));
+        tickFormat = d3.timeFormat("%Y");
+      }
+      
+      axisG.call(d3.axisBottom(newXScale)
+        .ticks(tickInterval)
+        .tickFormat(tickFormat));
+      
+      // Scale-dependent styling - but keep it subtle since we're focusing on timeline
+      const zoomLevel = transform.k;
+      const nodeRadius = Math.max(4, Math.min(12, 6 + Math.log(zoomLevel) * 1.5));
+      const labelSize = Math.max(9, Math.min(14, 10 + Math.log(zoomLevel)));
+      
+      g.selectAll('.node')
+        .attr('r', d => nodeRadius + (d.connections * 0.3));
+      
+      g.selectAll('.label')
+        .style('font-size', labelSize + 'px')
+        .style('opacity', zoomLevel > 0.5 ? 1 : Math.max(0.3, zoomLevel * 2));
+    }
+
+    function handleNodeHover(event, d) {
+      const tooltip = document.getElementById('tooltip');
+      const year = d.parsedDate ? d.parsedDate.getFullYear() : 'Unknown';
+      
+      tooltip.innerHTML = `
+        <strong>${d.label}</strong><br>
+        Year: ${year}<br>
+        Total Connections: ${d.connections}<br>
+        Documents Cited: ${d.citationCount}<br>
+        Times Cited: ${graphData.links.filter(l => l.target === d.id || (l.target.id && l.target.id === d.id)).length}
+      `;
+      tooltip.style.left = (event.pageX + 10) + 'px';
+      tooltip.style.top = (event.pageY - 10) + 'px';
+      tooltip.style.opacity = '1';
+    }
+
+    function handleNodeOut() {
+      document.getElementById('tooltip').style.opacity = '0';
+    }
+
+    function findNode(id) {
+      return graphData.nodes.find(n => n.id === id);
+    }
+
+    function zoomIn() {
+      if (!svg) return;
+      svg.transition()
+        .duration(300)
+        .call(zoom.scaleBy, 3); // More aggressive zoom for timeline focus
+    }
+
+    function zoomOut() {
+      if (!svg) return;
+      svg.transition()
+        .duration(300)
+        .call(zoom.scaleBy, 0.33); // More aggressive zoom out
+    }
+
+    function zoomToMostMentioned() {
+      if (!xScale || citationCounts.size === 0) return;
+      
+      const range = getMostCitingDocuments();
+      if (!range) return;
+      
+      const width = +svg.attr("width");
+      const height = +svg.attr("height");
+      const [startX, endX] = range.map(d => xScale(d));
+      const duration = 1000;
+      
+      // Calculate timeline-focused zoom
+      const targetWidth = endX - startX;
+      const scale = Math.min(50, (width * 0.8) / targetWidth);
+      const centerX = (startX + endX) / 2;
+      const translateX = width / 2 - centerX * scale;
+      
+      svg.transition()
+        .duration(duration)
+        .call(zoom.transform, d3.zoomIdentity.translate(translateX, 0).scale(scale));
+    }
+
+    function resetZoom() {
+      if (!svg) return;
+      svg.transition()
+        .duration(750)
+        .call(zoom.transform, d3.zoomIdentity);
+    }
+
+    function fitToContent() {
+      if (!graphData.nodes.length || !xScale) return;
+      
+      const validDates = graphData.nodes
+        .map(d => d.parsedDate)
+        .filter(d => d instanceof Date && !isNaN(d));
+        
+      if (validDates.length === 0) return;
+      
+      const extent = d3.extent(validDates);
+      const width = +svg.attr("width");
+      const [startX, endX] = extent.map(d => xScale(d));
+      
+      // Timeline-focused fit
+      const targetWidth = endX - startX;
+      const scale = Math.min(20, (width * 0.9) / targetWidth);
+      const centerX = (startX + endX) / 2;
+      const translateX = width / 2 - centerX * scale;
+      
+      svg.transition()
+        .duration(750)
+        .call(zoom.transform, d3.zoomIdentity.translate(translateX, 0).scale(scale));
+    }
+
+    // Initialize with example query
+    window.addEventListener('load', () => {
+      executeQuery();
+    });
+  </script>
+</body>
+</html>
