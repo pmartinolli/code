@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Scholarly Timeline Network</title>
+  <title>Scholarly Timelined Network</title>
+  <meta name="author" content="Pascal Martinolli">
+    <meta name="description" content="By default it is built on the early papers on game theory, starting by the seminal paper « Zur Theorie der Gesellschaftsspiele » by Von Neumann in 1928 (Q55867220), using « cites » property as links (P2860). The JavaScript code is executed in the browser and it is querying Qlever, with data from Wikidata (Qlever has a complete graph, whereas Wikidata is divided between scholarly articles and all else since 2024). This tool is inspired by CitationTree by Nicolas Loizeau.">
+    <meta name="keywords" content="HTML, CSS, JavaScript, Wikidata, SPARQL, timeline, graph, network, academic papers">
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
     body { 
@@ -147,10 +150,9 @@
 </head>
 <body>
   <div class="container">
-    <h1>Scholarly Timeline Network</h1>
-    <p>Experimental : genealogy by backward citations of early papers on game theory, starting by the seminal paper « Zur Theorie der Gesellschaftsspiele » by Von Neumann in 1928 (<a href="https://www.wikidata.org/wiki/Q55867220">Q55867220</a>). Can be adapted to any work linked with citations (P2860)</p>
-    <p>Querying Qlever, with data from Wikidata (Qlever has a complete graph, whereas Wikidata is divided between scholarly articles and all else since 2024).</p>
-    <p>JavaScript wizards needed to improve the visual rendering of the graph: <a href="https://pmartinolli.github.io/">Contact</a>, pascal.umontreal gmail.com</p>
+    <h1>Scholarly Timelined Network: a Genealogy of Written Works by Backward Citations</h1>
+    <p>By default it is built on the early papers on game theory, starting by the seminal paper « Zur Theorie der Gesellschaftsspiele » by Von Neumann in 1928 (<a href="https://www.wikidata.org/wiki/Q55867220">Q55867220</a>), using « cites » property as links (P2860). The JavaScript code is executed in the browser and it is querying Qlever, with data from Wikidata (Qlever has a complete graph, whereas Wikidata is divided between scholarly articles and all else since 2024). This tool is inspired by <a href="">CitationTree</a> by Nicolas Loizeau.</p>
+    <p>Author : <a href="https://pmartinolli.github.io/">Pascal Martinolli</a> («vibe coded» with the Claude Sonnet 4)</p>
     
     <div class="controls">
       <div class="control-group">
@@ -222,6 +224,21 @@
       `;
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     function buildSparqlQuery() {
       const startEntity = document.getElementById('startingEntity').value.trim();
       const relationProperty = document.getElementById('relationProperty').value;
@@ -291,6 +308,22 @@ LIMIT 500`;
       }
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     function processQueryResults(results) {
       graphData = { nodes: [], links: [] };
       const nodeMap = new Map();
@@ -325,6 +358,17 @@ LIMIT 500`;
       });
     }
 
+
+
+
+
+
+
+
+
+
+
+
     function getMostCitingDocuments() {
       if (citationCounts.size === 0) return null;
       
@@ -354,6 +398,22 @@ LIMIT 500`;
         new Date(maxDate.getTime() + padding)
       ];
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     function renderGraph() {
       svg = d3.select("#network");
@@ -392,34 +452,39 @@ LIMIT 500`;
       g = svg.append("g");
 
       // Improved node positioning with clustering by date
-      const dateGroups = d3.group(
-        graphData.nodes.filter(d => d.parsedDate), 
-        d => d.parsedDate.getFullYear()
-      );
+        // Convert to hierarchical structure for d3.tree
+        const root = d3.stratify()
+          .id(d => d.id)
+          .parentId(d => {
+            // Find parent based on citation links (reverse direction)
+            const parentLink = graphData.links.find(l => l.target === d.id);
+            return parentLink ? parentLink.source : null;
+          })(graphData.nodes);
 
-      graphData.nodes.forEach((d, i) => {
-        if (d.parsedDate) {
-          d.x = xScale(d.parsedDate);
+        // Apply tree layout
+        const treeLayout = d3.tree()
+          .size([height - 100, width - 160]);
+
+        const treeData = treeLayout(root);
+
+        // Apply tree positions to nodes
+        graphData.nodes.forEach(node => {
+          const treeNode = treeData.descendants().find(d => d.id === node.id);
+          if (treeNode) {
+            node.y = treeNode.x + 50; // Horizontal becomes vertical
+            node.x = treeNode.y + 80; // Vertical becomes horizontal (timeline)
+            // Override x with timeline position if date exists
+            if (node.parsedDate) {
+              node.x = xScale(node.parsedDate);
+            }
+          } else {
+            // Fallback for nodes not in tree
+            node.x = width - 150 + Math.random() * 100;
+            node.y = 100 + Math.random() * 500;
+          }
           
-          // Cluster nodes by year with vertical spread
-          const year = d.parsedDate.getFullYear();
-          const yearNodes = dateGroups.get(year) || [d];
-          const nodeIndex = yearNodes.indexOf(d);
-          const totalInYear = yearNodes.length;
-          
-          // Create better vertical distribution
-          const baseY = height * 0.4;
-          const spread = Math.min(300, totalInYear * 25);
-          d.y = baseY + (nodeIndex - totalInYear / 2) * (spread / totalInYear) + Math.random() * 20 - 10;
-          
-        } else {
-          // Nodes without dates go to the side
-          d.x = width - 150 + Math.random() * 100;
-          d.y = 100 + (i % 20) * 25;
-        }
-        
-        d.fx = d.x; // Fix x position
-      });
+          node.fx = node.x; // Fix x position
+        });
 
       // Enhanced links with better styling
       const link = g.append("g")
@@ -449,7 +514,13 @@ LIMIT 500`;
           return d3.interpolateViridis(intensity);
         })
         .on("mouseover", handleNodeHover)
-        .on("mouseout", handleNodeOut);
+        .on("mouseout", handleNodeOut)
+        .on("click", function(event, d) {
+              event.stopPropagation();
+              const qid = d.id.split('/').pop();
+              const wikidataUrl = `https://www.wikidata.org/wiki/${qid}`;
+              window.open(wikidataUrl, '_blank');
+            });
 
       // Enhanced labels
       const label = g.append("g")
@@ -469,13 +540,15 @@ LIMIT 500`;
         
       axisG = svg.append("g")
         .attr("class", "timeline-axis")
-        .attr("transform", `translate(0, ${height - 60})`)
+        // making sure the timeline is a little under the main node 
+        .attr("transform", `translate(0, ${height * 0.4 + 100})`)
         .call(xAxis);
 
       // Add axis label
       svg.append("text")
         .attr("x", width / 2)
-        .attr("y", height - 15)
+        // making sure the timeline is a little under the main node 
+        .attr("y", height * 0.4 + 135)
         .attr("text-anchor", "middle")
         .style("font-size", "12px")
         .style("font-weight", "600")
@@ -531,11 +604,10 @@ LIMIT 500`;
       });
 
       // Add force simulation for better layout
-      simulation = d3.forceSimulation(graphData.nodes)
-        .force("link", d3.forceLink(graphData.links).id(d => d.id).strength(0.1))
-        .force("charge", d3.forceManyBody().strength(-100))
-        .force("collision", d3.forceCollide().radius(d => Math.max(8, 7 + d.connections)))
-        .force("y", d3.forceY(height * 0.4).strength(0.1))
+        // Simplified simulation to maintain tree structure
+        simulation = d3.forceSimulation(graphData.nodes)
+          .force("collision", d3.forceCollide().radius(d => Math.max(8, 7 + d.connections)))
+          .force("y", d3.forceY().y(d => d.y).strength(0.1))
         .on("tick", () => {
           link
             .attr("x1", d => d.source.x)
@@ -555,6 +627,22 @@ LIMIT 500`;
       // Stop simulation after a while
       setTimeout(() => simulation.stop(), 3000);
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     function handleZoom(event) {
       const transform = event.transform;
