@@ -153,7 +153,7 @@
     <h1>Scholarly Timelined Network: a Genealogy of Written Works by Backward Citations</h1>
     <p>By default it is built on the early papers on game theory, starting by the seminal paper « Zur Theorie der Gesellschaftsspiele » by Von Neumann in 1928 (<a href="https://www.wikidata.org/wiki/Q55867220">Q55867220</a>), using « cites » property as links (P2860). The JavaScript code is executed in the browser and it is querying Qlever, with data from Wikidata (Qlever has a complete graph, whereas Wikidata is divided between scholarly articles and all else since 2024). This tool is inspired by <a href="">CitationTree</a> by Nicolas Loizeau.</p>
     <p>Author : <a href="https://pmartinolli.github.io/">Pascal Martinolli</a> («vibe coded» with the Claude Sonnet 4)</p>
-    <p>Work in progress : It seems unable to handle very large networks or dense cross-references. It is better suited to older works where citations are manually indexed, and less effective for recent works with numerous and complex citation links.</p>
+    <p>Work in progress : It seems unable to handle very large networks or dense cross-references. It is better suited to older works where citations are manually indexed, and less effective for recent works with numerous and complex citation links. </p>
     <div class="controls">
       <div class="control-group">
         <label for="startingEntity">Starting Entity (QID):</label>
@@ -237,7 +237,8 @@
 
 
 
-
+// The SPARQL below choose the lower date between Publication Date and Inception
+// It is supposed to handle "BCE" and "CE" and "century" etc. through xsd 
 
     function buildSparqlQuery() {
       const startEntity = document.getElementById('startingEntity').value.trim();
@@ -248,7 +249,7 @@
 PREFIX wd: <http://www.wikidata.org/entity/>
 PREFIX wdt: <http://www.wikidata.org/prop/direct/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 SELECT DISTINCT ?item ?itemLabel ?cited ?citedLabel ?itemDate ?citedDate WHERE {
   {
     SELECT ?item WHERE {
@@ -259,13 +260,37 @@ SELECT DISTINCT ?item ?itemLabel ?cited ?citedLabel ?itemDate ?citedDate WHERE {
   
   ?item wdt:${relationProperty} ?cited .
   
-  OPTIONAL { ?item wdt:P577 ?itemDate . }
-  OPTIONAL { ?cited wdt:P577 ?citedDate . }
+  OPTIONAL { ?item wdt:P577 ?itemPubDate . }
+  OPTIONAL { ?item wdt:P571 ?itemInceptionDate . }
+  OPTIONAL { ?cited wdt:P577 ?citedPubDate . }
+  OPTIONAL { ?cited wdt:P571 ?citedInceptionDate . }
+  
+  BIND(COALESCE(
+    IF(?itemPubDate < ?itemInceptionDate, ?itemPubDate, ?itemInceptionDate),
+    ?itemPubDate,
+    ?itemInceptionDate
+  ) AS ?itemDateRaw)
+  
+  BIND(COALESCE(
+    IF(?citedPubDate < ?citedInceptionDate, ?citedPubDate, ?citedInceptionDate),
+    ?citedPubDate,
+    ?citedInceptionDate
+  ) AS ?citedDateRaw)
+  
+  BIND(IF(BOUND(?itemDateRaw), 
+    xsd:int(YEAR(?itemDateRaw)), 
+    ?itemDateRaw) AS ?itemDate)
+  
+  BIND(IF(BOUND(?citedDateRaw), 
+    xsd:int(YEAR(?citedDateRaw)), 
+    ?citedDateRaw) AS ?citedDate)
+  
   OPTIONAL { ?item rdfs:label ?itemLabel . FILTER(lang(?itemLabel) = "en") }
   OPTIONAL { ?cited rdfs:label ?citedLabel . FILTER(lang(?citedLabel) = "en") }
 }
 ORDER BY ?itemDate
-LIMIT 500`;
+LIMIT 500
+`;
     }
 
     async function executeQuery() {
