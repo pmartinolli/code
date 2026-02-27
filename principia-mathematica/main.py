@@ -9,7 +9,7 @@ from collections import Counter
 # Define the target names of historical scientists
 # Using a predefined list as suggested to avoid NER model dependency issues
 target_names = [
-"Horrox", "Egyptians", "Romans", "Anaximander", "Pythagoreans", "Numa Pompilius", "Democritus", "Eudoxus", "Calippus", "Crabtrie", "Marius", "Townley", "Romer", "Ricciolus", "Kircher", "Pappus", "Halley", "Royal Society", "Galileo", "Wren", "Wallis", "Huygens", "Huygenian", "Hugenius", "Mariotte", "Euclid", "Hook", "Hooke", "Apollonius", "Archimedes", "Snellius", "Des Cartes", "Grimaldus", "Collins", "Slusius", "Huddens", "Desaguliers", "Sauveur", "Copernicus", "Copernican", "Borelli", "Townly", "Cassini", "Pound", "Kepler", "Keplerian", "Bullialdus", "Ptolemy", "Vendelin", "Street", "Tycho", "Mercator", "Norwood", "Picart", "Richer", "Varin", "des Hayes", "Couplet", "Feuillé", "de la Hire", "Colepress", "Sturmy", "Machin", "Pemberton", "Flamsted", "Hevelius", "Cysatus", "Bayer", "Kirch", "Julius Cæsar", "Ponthæus", "Cellius", "Galletius", "Ango", "Storer", "Montenari", "Zimmerman", "Estancius", "Simeon", "Matthew Paris", "Aristotle", "Auzout", "Petit", "Gottignies", "Bradley", "Hipparchus", "Cornelius Gemma", "God", "Pocock", "John", "Moses", "Aaron", "Pythagoras", "Cicer.", "Thales", "Anaxagoros", "Virgil", "Philo Allegor.", "Aratus", "St. Paul", "David", "Solomon", "Job", "Jeremiah", "Pharaoh", "Philolaus", "Aristarchus", "Plato"
+"Horrox", "Egyptians", "Romans", "Anaximander", "Pythagoreans", "Pompilius", "Democritus", "Eudoxus", "Calippus", "Crabtrie", "Marius", "Townley", "Romer", "Ricciolus", "Kircher", "Pappus", "Halley", "Royal Society", "Galileo", "Wren", "Wallis", "Huygens", "Huygenian", "Hugenius", "Mariotte", "Euclid", "Hook", "Hooke", "Apollonius", "Archimedes", "Snellius", "Des Cartes", "Grimaldus", "Collins", "Slusius", "Huddens", "Desaguliers", "Sauveur", "Copernicus", "Copernican", "Borelli", "Townly", "Cassini", "Pound", "Kepler", "Keplerian", "Bullialdus", "Ptolemy", "Vendelin", "Street", "Tycho", "Mercator", "Norwood", "Picart", "Richer", "Varin", "des Hayes", "Couplet", "Feuillé", "de la Hire", "Colepress", "Sturmy", "Machin", "Pemberton", "Flamsted", "Hevelius", "Cysatus", "Bayer", "Kirch", "Julius Cæsar", "Ponthæus", "Cellius", "Galletius", "Ango", "Storer", "Montenari", "Zimmerman", "Estancius", "Simeon", "Matthew Paris", "Aristotle", "Auzout", "Petit", "Gottignies", "Bradley", "Hipparchus", "Cornelius Gemma", "God", "Pocock", "John", "Moses", "Aaron", "Pythagoras", "Cicer.", "Thales", "Anaxagoros", "Virgil", "Aratus", "St. Paul", "David", "Solomon", "Job", "Jeremiah", "Pharaoh", "Philolaus", "Aristarchus", "Plato", "Leibnitz",
 ]
 
 # File path setup
@@ -79,9 +79,9 @@ else:
 counts = Counter(found_names)
 
 print("\n##### Analysis Results #####")
-print(f"Total Citations Found: {len(positions)}")
-print(f"Unique Scientists Cited: {len(counts)}")
-print("\nTop 10 Most Cited Scientists:")
+print(f"Total Named Entities Found: {len(positions)}")
+print(f"Unique Named Entities Mentioned: {len(counts)}")
+print("\nTop 10 Most Mentioned Named Entities:")
 for name, count in counts.most_common(10):
     print(f"  {name}: {count}")
 
@@ -93,7 +93,7 @@ if p_value < 0.05:
 else:
     print("Result: The distribution is consistent with Uniform.")
 
-print(f"\nMean Distance between citations: {mean_interval:.2f} characters")
+print(f"\nMean Distance between Mentions: {mean_interval:.2f} characters")
 print(f"Variance of Distances: {var_interval:.2f}")
 print(f"Dispersion Metric (Var/Mean of distances): {dispersion_metric:.2f}")
 print(f"Coefficient of Variation (Std/Mean): {cv:.2f}")
@@ -110,7 +110,7 @@ plt.figure(figsize=(15, 6))
 # Subplot 1: Rug Plot
 plt.subplot(1, 2, 1)
 plt.eventplot(positions, orientation='horizontal', colors='black', linewidths=0.5)
-plt.title("Rug Plot of Scientific Authority Citations")
+plt.title("Rug Plot of Scientific Authority Mentions")
 plt.xlabel("Position in Text (Characters)")
 plt.yticks([])
 plt.xlim(0, total_length)
@@ -118,9 +118,15 @@ plt.xlim(0, total_length)
 # Subplot 2: Histogram
 plt.subplot(1, 2, 2)
 plt.hist(positions, bins=50, color='skyblue', edgecolor='black', alpha=0.7)
-plt.title("Histogram of Citation Density")
+plt.title("Histogram of Mentions Density")
 plt.xlabel("Position in Text (Characters)")
 plt.ylabel("Frequency")
 
 plt.tight_layout()
+
+# Save the figure as a PNG file
+plt.savefig('figure.png', format='png', dpi=300)
+
+# Display the plot
 plt.show()
+
