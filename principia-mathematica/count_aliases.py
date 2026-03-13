@@ -122,6 +122,10 @@ def main():
             for alias, count in sorted(alias_counts.items(), key=lambda x: x[1], reverse=True):
                 writer.writerow([qid_label, alias, count])
 
+            # Total row for this entity
+            total = sum(alias_counts.values())
+            writer.writerow([qid_label, "Total", total])
+
     print(f"✓ Table written to: {out_path}")
 
 
