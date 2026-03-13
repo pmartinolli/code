@@ -1,0 +1,1792 @@
+type,text,startPosition,endPosition
+person,Isaac Newton,57,69
+organization,Wikisource,99,109
+person,SIR ISAAC NEWTON,238,254
+person,ISAAC NEWTON,242,254
+person,ANDREW MOTTE,288,300
+person,NEWTON,328,334
+organization,Royal Observatory,406,423
+person,N. W. CHITTENDEN,531,547
+person,DANIEL ADEE,601,612
+organization,Congress,675,683
+person,DANIEL ADEE,706,717
+organization,Clerk's Office,727,741
+organization,Southern District Court of New-York,749,784
+person,Sir Isaac Newton,880,896
+organization,Centripetal Forces,1186,1204
+organization,The System of the World,3543,3566
+person,Pappus,3745,3751
+organization,moderns,3849,3856
+organization,ancients,4075,4083
+person,ancients,4075,4083
+person,artificers,4293,4303
+person,artificers,4546,4556
+person,mechanic,4691,4699
+organization,mechanics,4799,4808
+organization,Geometry,4810,4818
+person,learner,4914,4921
+organization,geometry,4997,5005
+organization,mechanics,5197,5206
+organization,mechanics,5487,5496
+organization,mechanics,5944,5953
+person,ancients,5976,5984
+organization,System of the World,6824,6843
+person,philosophers,7624,7636
+person,Edmund Halley,7882,7895
+organization,press,7950,7955
+person,me,8083,8085
+person,me,8166,8168
+person,me,8190,8192
+organization,Royal Society,8200,8213
+person,me,8283,8285
+person,I,8325,8326
+person,I,8797,8798
+organization,Prop. 66,8976,8984
+person,I,9226,9227
+person,ISAAC NEWTON,9551,9563
+organization,Trinity College,9579,9594
+person,Mr. Pound,10415,10424
+person,Mr. Kirk,10514,10522
+person,Dr. Halley,10611,10621
+person,Mr. Bradl,10671,10680
+person,Mr. Bradley,10671,10682
+person,another,12969,12976
+person,ally,14040,14044
+person,hand,14230,14234
+person,mathematicians,17238,17252
+person,reader,21600,21606
+person,I,21895,21896
+person,I,22003,22004
+person,I,22245,22246
+person,vulgar,22270,22276
+organization,ship,26017,26021
+organization,ship,26101,26105
+person,sailor,26232,26238
+organization,ship,26252,26256
+person,sailor,26318,26324
+organization,astronomy,26516,26525
+person,astronomers,26727,26738
+organization,pendulum clock,27457,27471
+person,sailor,31305,31311
+person,ssel,34398,34402
+organization,system,35658,35664
+person,eavens,36036,36042
+organization,sacred writings,36691,36706
+person,I,39579,39580
+person,horse,41361,41366
+person,horse,41401,41406
+person,horse,41558,41563
+person,horse,41624,41629
+organization,mechanics,43778,43787
+organization,NH,47270,47272
+person,authors,47651,47658
+person,A,48910,48911
+person,B,48931,48932
+person,A,49084,49085
+person,B,49122,49123
+person,A,49173,49174
+person,B,49217,49218
+person,A,49302,49303
+person,B,49421,49422
+person,A,49448,49449
+person,ck,49608,49610
+person,Corol. II,50906,50915
+person,COROLLARY IV,51664,51676
+person,Lem. XXIII,52230,52240
+organization,system,54148,54154
+organization,bodies,54569,54575
+organization,common centre of all,54680,54700
+organization,system,54903,54909
+organization,bodies,55369,55375
+organization,system,55589,55595
+organization,system,55641,55647
+organization,syste,55837,55842
+person,COROLLARY V,55928,55939
+organization,Law II,56462,56468
+organization,Law II,57285,57291
+person,lai,57477,57480
+organization,mathematicians,57528,57542
+person,Galileo,57644,57651
+organization,Laws and Corollaries,59310,59330
+person,Sir Christ. Wren,59537,59553
+person,Dr. Wallis,59555,59565
+person,Mr. Huygens,59571,59582
+organization,Royal Society,59768,59781
+person,Dr. Wallis,59836,59846
+person,Sir Christopher Wren,59915,59935
+person,Mr. Huygens,59950,59961
+person,Sir Christopher Wren,59967,59987
+organization,Royal Society,60032,60045
+person,Mr. Mariotte,60084,60096
+person,geometers,61373,61382
+person,A,61542,61543
+person,A,61663,61664
+person,A,61894,61895
+person,A,61913,61914
+person,A,63479,63480
+person,B,63504,63505
+person,A,63686,63687
+person,B,63721,63722
+person,A,63741,63742
+person,B,63759,63760
+person,A,63861,63862
+person,a,63938,63939
+person,A,64195,64196
+person,B,64236,64237
+person,A,64279,64280
+person,B,64297,64298
+organization,congress,64400,64408
+organization,congress,64953,64961
+person,Wren,65784,65788
+person,Huygens,65793,65800
+organization,congress,66737,66745
+person,B,67674,67675
+organization,system,67780,67786
+person,B,67878,67879
+organization,system,68046,68052
+person,I,69485,69486
+organization,congress,69738,69746
+organization,reflexion,69751,69760
+organization,mechanic instruments,69837,69857
+person,agents,69864,69870
+person,hand,70826,70830
+person,hand,71004,71008
+person,hand,71403,71407
+person,hand,71532,71536
+organization,machines,72012,72020
+organization,machines,72044,72052
+organization,machines,72187,72195
+organization,machines,72347,72355
+person,agent,72400,72405
+person,agent,72458,72463
+organization,mechanics,73069,73078
+person,agent,73248,73253
+organization,machines,73555,73563
+person,D,74326,74327
+person,Lem. I,75525,75531
+person,Cor.,76306,76310
+person,Cor. 4,76577,76583
+person,Lem. III,77325,77333
+person,"Q.E.D.
+
+Cor.",77448,77460
+person,Cor.,77456,77460
+person,Cor. 3,80531,80537
+organization,RAD,81434,81437
+person,"Q.E.D.
+
+Cor.",81556,81568
+person,Lem. V,82779,82785
+organization,ABD,83542,83545
+organization,ACE,83547,83550
+person,Lem. IX,83631,83638
+person,Cor.,84374,84378
+person,Cor.,84601,84605
+person,Cor. 5,84749,84755
+organization,SCH,84855,84858
+person,A,85384,85385
+person,B,85403,85404
+person,C,85419,85420
+person,D,85435,85436
+person,A,85469,85470
+person,A,85544,85545
+person,Lem. I,86780,86786
+person,Lem. I,87414,87420
+organization,DB,89498,89500
+organization,DB,89696,89698
+person,geometers,90950,90959
+person,I,91602,91603
+person,Euclid,93814,93820
+organization,Elements,93891,93899
+person,I,94740,94741
+person,Cor. I. of the Laws,95946,95965
+person,Cor. I.,95946,95953
+person,Cor. 4,96776,96782
+person,Lem. III,96784,96792
+person,Lem. III.,96784,96793
+organization,SADS,97005,97009
+organization,SAFS,97011,97015
+person,"Q.E.D.
+
+Cor.",97133,97145
+person,Cor. 6,99119,99125
+person,L,102049,102050
+person,T,102074,102075
+organization,Laws,102114,102118
+person,L,102275,102276
+person,T,102388,102389
+person,Theor. II.,102773,102783
+person,"Q.E.D
+
+
+
+Cor.",102861,102874
+person,Q.E.D,102861,102866
+person,La,103108,103110
+person,"T.
+
+
+
+
+
+SCHOLIUM",104300,104316
+person,Cor. 4,105178,105184
+person,Lem. VII.,105282,105291
+person,Cor.,106028,106032
+person,Cor.,106360,106364
+person,Cor.,106521,106525
+person,Cor.,106775,106779
+organization,6th Corollary,107890,107903
+person,Sir Christopher Wren,107940,107960
+person,Dr. Hooke,107962,107971
+person,Dr. Halley,107977,107987
+person,Mr. Huygens,108688,108699
+person,Huygens,108692,108699
+person,Cor. 1,110868,110874
+person,Cor. 4,111749,111755
+person,Prop. 1,111757,111764
+person,Cor. 2,111927,111933
+person,Lem. XI.,111941,111949
+person,Q.E.D.,112154,112160
+person,Corol. 4,112216,112224
+person,"Lem. X.
+
+Cor.",112226,112239
+person,PV,113490,113492
+organization,PSG,116543,116546
+organization,TPV,116548,116551
+organization,PM³,118013,118016
+person,writers,119615,119622
+person,Lem. XII,120344,120352
+person,Cor. 2,121824,121830
+person,SCHOL,122527,122532
+person,Galileo,122766,122773
+person,Corol,125330,125335
+person,Lem. XII.,127616,127625
+person,Cor. 3,128306,128312
+person,writers,128759,128766
+organization,PS,129480,129482
+organization,PS²,129521,129524
+organization,PS,129597,129599
+person,Lem. XIII.,130588,130598
+person,Cor. 2,130698,130704
+person,Lem. VII.,130706,130715
+person,Cor. 1,130909,130915
+person,Lem. XIV.,130917,130926
+organization,SA,130938,130940
+person,Cor. 2,133035,133041
+person,Prop. XIII,133043,133053
+person,"Q.E.D.
+
+Cor.",133380,133392
+person,Cor. 3. Prop. XIV,134154,134171
+person,"Q.E.D.
+
+Cor.",134457,134469
+person,Lem. VII,135256,135264
+organization,Lem. VII,135256,135264
+person,"Q.E.D.
+
+Cor.",135522,135534
+person,Cor. 3,135960,135966
+person,Cor. 6,136994,137000
+person,Cor. 2,137232,137238
+person,Lem. XIV,137240,137248
+person,Cor. 7,137443,137449
+person,Cor.,138112,138116
+person,Cor. 5,138404,138410
+person,Cor. 9,138413,138419
+person,Cor,138441,138444
+person,Cor. 1,139986,139992
+person,Prop. XVI,139994,140003
+organization,SCHO,143588,143592
+person,Cor. 1,143902,143908
+person,Schol. Prop. X.,143914,143929
+organization,Schol. Prop. X.,143914,143929
+person,Cor. 3,143935,143941
+organization,"Cor. 3, Prop. VII.",143935,143953
+person,Cor. 3,147309,147315
+person,Lem. XIV,147317,147325
+person,Lem. XV,150115,150122
+person,Apollonius,154840,154850
+person,Vieta,154882,154887
+person,SCHOLIU,155987,155994
+person,M. De la Hire,157499,157512
+organization,Conics,157569,157575
+person,Apollonius,158880,158890
+person,nius's Conics,158886,158899
+person,AP,161069,161071
+organization,AP,161069,161071
+person,Lem. XVII,161340,161349
+organization,PS,161400,161402
+organization,PS,161477,161479
+person,LEMMA XIX,164631,164640
+person,Euclid,167263,167269
+person,Apollonius,167289,167299
+organization,ancients,167381,167389
+person,ancients,167381,167389
+person,Lem. XVII,168356,168365
+person,Lem. XVIII,169144,169154
+person,BD,170009,170011
+person,Corol. 3,173041,173049
+person,Lem. XX,173051,173058
+person,Lem. XX,173994,174001
+person,Lem. XXI,174964,174972
+person,SCHOL,175645,175650
+person,Lem. XX,176824,176831
+person,me,185476,185478
+person,Lem. XXII,189236,189245
+person,Lem. XXII,189786,189795
+person,Henc,194366,194370
+person,Lem. XXIII,194657,194667
+person,Cor. 3,195048,195054
+person,Lem. XXV,195056,195064
+organization,"Prob. XIV. Q.E.F.
+
+
+
+
+
+SCHOLIUM",196145,196176
+organization,Problems,196771,196779
+organization,Problems,196828,196836
+person,Lem. XXI,196985,196993
+person,BN,197269,197271
+person,Lem. XXVI,203003,203012
+person,LEMMA XXVII,203112,203123
+organization,FH,203825,203827
+person,Cor,205833,205836
+organization,BD,208037,208039
+person,Sir Christopher Wren,208042,208062
+person,Dr. Wallis,208067,208077
+person,Lem. XXVII,208740,208750
+organization,APS,211551,211554
+organization,APS,211631,211634
+person,"A.
+
+Cor. 3",212259,212269
+organization,AP,212374,212376
+organization,AP,212383,212385
+person,"H.
+
+
+
+
+
+LEMMA XXVIII",212462,212482
+organization,MMA XXVIII,212472,212482
+organization,calculus,214248,214256
+organization,Book of Elements,217904,217920
+person,GH,218560,218562
+person,GK,218722,218724
+organization,calculus,222638,222646
+organization,BSP,225583,225586
+person,Cor. 1 Prop. XIII,226829,226846
+person,Cor. 7,231758,231764
+person,Cor. Lem. IV,234282,234294
+organization,IS,236808,236810
+organization,SEDS,236812,236816
+person,Cor. 3,238029,238035
+person,Cor. Lem. IV,240829,240841
+organization,ATVME,240919,240924
+person,"Q.E.D.
+
+Co",240926,240936
+person,inventi,243971,243978
+person,Cor. 2,245024,245030
+person,Cor,247361,247364
+person,"Q.E.I.
+
+Cor.",251099,251111
+person,PK,256698,256700
+person,Cor. 5,256717,256723
+organization,EOREM XIV,256932,256941
+person,Cor,257757,257760
+person,Cor. 1,262839,262845
+person,Cor.,262839,262843
+organization,rce,268164,268167
+person,Cor.,274405,274409
+person,Cor.,274415,274419
+person,authors,278296,278303
+organization,PQR,279886,279889
+person,Cor. 2,280201,280207
+organization,Prop. XLII,280896,280906
+person,Cor. 2,282285,282291
+person,Cor. 2,282306,282312
+organization,ABL,284442,284445
+person,Cor. Lem,287026,287034
+person,Cor. Lem. IV,287026,287038
+person,Abou,288434,288438
+person,Cor. 2,291204,291210
+organization,Laws,291219,291223
+person,"Q.E.D.
+
+Cor.",293293,293305
+organization,QOS,295644,295647
+person,GH,296486,296488
+person,Cor. Prop. L,296563,296575
+person,Sir Christopher Wren,297741,297761
+person,M. Huygens,297766,297776
+person,Sir Christopher Wren,298356,298376
+person,M. Huygens,298484,298494
+person,M. Huygens,298593,298603
+person,"Q.E.D.
+
+Cor.",300741,300753
+organization,clocks,301448,301454
+person,"Q.E.D.
+
+Cor.",305774,305786
+person,Cor. 4,308491,308497
+person,mathematical reader,309360,309379
+organization,Theor. XX,311109,311118
+person,Cor. 4,311362,311368
+organization,S. Q.E.D.,313566,313575
+person,Q.E.D.,315805,315811
+person,P,316092,316093
+person,P,316206,316207
+person,S,316851,316852
+person,S,317000,317001
+person,S,317010,317011
+person,S,317175,317176
+person,Cor. 1,321775,321781
+person,Theor. XXI,321783,321793
+organization,Prob. V,321891,321898
+person,Cor. 2,322048,322054
+person,L,324324,324325
+person,Cor. 4,325813,325819
+organization,Laws,325828,325832
+organization,system,328112,328118
+organization,system,328259,328265
+person,Q.E.O.,328816,328822
+organization,system,328977,328983
+organization,system,329089,329095
+organization,system,329382,329388
+organization,system,329778,329784
+person,great body,331146,331156
+person,SM,332286,332288
+person,LM,332290,332292
+person,Cor. 3,333005,333011
+organization,PAB,334929,334932
+person,Cor. 6,335547,335553
+person,Cor. 9,339938,339944
+person,M,340470,340471
+person,Cor. 2,340559,340565
+person,Prop. IV,340567,340575
+person,Cor. 6,341172,341178
+person,"S.
+
+Cor. 7",341895,341905
+person,Cor. 1,342730,342736
+person,Cor. 1,343220,343226
+organization,ESE,343981,343984
+organization,PAB,346556,346559
+person,Cor. 10,348147,348154
+organization,EST,348252,348255
+person,ML,348430,348432
+person,PAB,348473,348476
+person,Cor. 11,350419,350426
+organization,EST,351037,351040
+person,Cor. 12,351714,351721
+organization,corrollaries,351757,351769
+organization,Corollaries,352004,352015
+person,Cor,352551,352554
+person,Cor. 15,353744,353751
+organization,PAB,353787,353790
+person,Cor. 16,354596,354603
+person,NM,354979,354981
+person,ML,354983,354985
+person,Cor. 2,355076,355082
+person,Lem. X,355084,355090
+person,Cor. 14,355536,355543
+person,Cor,358586,358589
+person,Cor. 5,359429,359435
+person,KL,359936,359938
+organization,annulus,361096,361103
+person,Cor,363542,363545
+person,Cor. 22,363542,363549
+person,Cor. 2,364778,364784
+person,elves,366444,366449
+person,Cor. 20,366718,366725
+person,Cor. 2,369189,369195
+person,Cor,369918,369921
+person,great one,369973,369982
+person,man,371505,371508
+person,A,371664,371665
+person,B,371714,371715
+person,A,371773,371774
+person,B,371832,371833
+person,A,371919,371920
+person,A,371964,371965
+person,B,371974,371975
+person,A,372031,372032
+organization,system A,372540,372548
+organization,system A,372848,372856
+organization,common law,373139,373149
+person,Cor. 3,373235,373241
+person,Cor. of Prop. XLVIII,373744,373764
+person,Cor.,373744,373748
+organization,Defi,375014,375018
+person,HIKL,376054,376058
+person,HK,376186,376188
+person,Cor. 3,376247,376253
+person,Q.E.D.,377034,377040
+person,AHKB,377321,377325
+person,ahkb,377327,377331
+person,Cor. 3,378257,378263
+person,Lem VII,378265,378272
+organization,Laws,379139,379143
+person,Cor.,381264,381268
+organization,AEBF,382597,382601
+organization,"PS. Q.E.D.
+
+
+
+
+
+SCHOLIUM",382848,382872
+person,her hand,385632,385640
+organization,Prop. LXXIV,385874,385885
+person,Cor. 2,386267,386273
+organization,Law III,386540,386547
+person,Cor. 4,386919,386925
+person,Q.E.D.,388927,388933
+person,Cor.,388935,388939
+person,I,390803,390804
+person,Q.E.D.,394477,394483
+organization,AEBF,394604,394608
+person,Q.E.D.,394789,394795
+person,Lem. VIII,397219,397228
+person,Cor. 3,397234,397240
+person,Lem. V,397242,397248
+person,Lem. VII,397242,397250
+organization,DE,397336,397338
+organization,SG,397342,397344
+organization,PDE,397388,397391
+organization,PGS,397393,397396
+organization,PE,397405,397407
+organization,PS,397411,397413
+organization,EFfe,397489,397493
+organization,PS,397625,397627
+person,Archimedes,398319,398329
+organization,Book of the Sphere and Cylinder,398354,398385
+organization,DN,401250,401252
+person,I,406346,406347
+organization,PE,408805,408807
+organization,BREFGS,409777,409783
+organization,FEDG,409785,409789
+person,Archimedes,409979,409989
+organization,EBKDE,411181,411186
+person,"Q.E.D.
+
+Cor.",415530,415542
+organization,RSTV,417319,417323
+organization,RSTV,418963,418967
+person,"Q.E.D.
+
+Cor.",419073,419085
+organization,RSTV,419170,419174
+person,Cor,419918,419921
+person,FK,422653,422655
+person,corpuscle P,423822,423833
+organization,"LABI. Q.E.I.
+
+Cor. 1",424062,424082
+person,Cor. 1,424408,424414
+person,Prop. XC,424416,424424
+organization,AGOF,426185,426189
+organization,EGCB,427393,427397
+person,Cor. 3,429880,429886
+person,Prop. XC,429888,429896
+organization,oKO,430818,430821
+person,Galileo,434349,434356
+person,Galileo,436196,436203
+person,Galileo,440894,440901
+person,"Q.E.D.
+
+
+
+
+
+SCHOLIUM",441659,441679
+person,Snellius,441829,441837
+person,Des Cartes,441907,441917
+organization,Jupiter's Satellites,441963,441983
+organization,astronomers,442028,442039
+person,Grimaldus,442237,442246
+person,Cartesius,445905,445914
+organization,Optics and Geometry,445936,445955
+person,Cartesius,446004,446013
+organization,"B. Q.E.D.
+
+
+
+
+
+SCHOLIUM",448382,448405
+person,"Q.E.D.
+
+Cor.",449890,449902
+person,"LEMMA I.
+
+
+
+Quantiti",450346,450366
+person,Lem. 1,451253,451259
+person,"E.D.
+
+Case 2",452088,452100
+organization,Prop. 1,452328,452335
+person,"Q.E.D.
+
+Corol",452384,452397
+person,"E.D.
+
+Corol",452386,452397
+person,Lem. 1,454916,454922
+person,Corol. 3,455223,455231
+organization,RDGT,458897,458901
+organization,AMmB,467785,467789
+organization,AM,467834,467836
+person,"Q.E.D.
+
+Cor.",468136,468148
+person,maki,468848,468852
+person,"Q.E.D.
+
+Cor.",471896,471908
+organization,OLIUM,479700,479705
+person,Mr. J. Collins,479733,479747
+person,Slusius,479851,479858
+person,Hudden,480351,480357
+person,I,480459,480460
+person,I,480617,480618
+person,"AC.
+
+Cor. 3",483531,483542
+organization,AC,486960,486962
+organization,ABNK,487741,487745
+organization,ADT,487750,487753
+person,"Q.E.D.
+
+Cor.",487858,487870
+person,Corol,489436,489441
+person,Cor. 7,489947,489953
+organization,PFHQ,490555,490559
+person,Galileo,491821,491828
+person,Galileo,498876,498883
+organization,AH,504662,504664
+organization,AI,504707,504709
+organization,ABED,512004,512008
+organization,"Q.E.D.
+
+
+
+Cor.",512695,512709
+person,Cor.,515045,515049
+person,Lem. II,521479,521486
+person,"Q.E.D.
+
+Cor.",523230,523242
+organization,DET,524208,524211
+organization,AbNK,524216,524220
+organization,DET,524905,524908
+organization,AbNK,524913,524917
+organization,"Q.E.D.
+
+
+
+
+
+SCHOLIUM",524919,524939
+person,Q.E.D.,527477,527483
+person,Lem. X,528999,529005
+organization,OS,531648,531650
+organization,OP,531655,531657
+person,Theor. X,532248,532256
+person,Cor. 5,532470,532476
+person,Cor,534603,534606
+person,Cor. 9,535824,535830
+person,reader,539232,539238
+person,EF,541160,541162
+organization,GHI,542680,542683
+person,Ca,543730,543732
+person,"Q.E.D.
+
+Cor.",543815,543827
+person,"E.D.
+
+Cor.",543817,543827
+organization,DHM,544576,544579
+organization,AEI,544618,544621
+organization,CGL,544776,544779
+organization,GGL,545326,545329
+organization,Prop. XIX,547353,547362
+person,ighter,548730,548736
+person,vulgar,551092,551098
+person,demons,551214,551220
+person,I,551572,551573
+person,Cor. Prop. XIX,551874,551888
+person,Theor. XV,553640,553649
+person,Dr. Halley,560041,560051
+organization,barometer,561609,561618
+person,philosophers,566443,566455
+person,Q.E.D.,568163,568169
+person,Cor.,568171,568175
+person,Cor.,568488,568492
+organization,IEF,579619,579622
+organization,IGH,579625,579628
+person,Lem. II,581256,581263
+organization,PIGR,581735,581739
+person,Cor. 2,594255,594261
+person,Cor. Prop. XXX,596064,596078
+person,I,599987,599988
+organization,system,618741,618747
+organization,system,618977,618983
+organization,system,619088,619094
+organization,systems,619945,619952
+person,cles,620568,620572
+person,Cor. 1,621100,621106
+person,Prop. IV.,621114,621123
+organization,Book 1,621125,621131
+organization,system,621283,621289
+person,Cor. 1,621774,621780
+organization,systems,621886,621893
+person,Cor.,622251,622255
+organization,systems,622319,622326
+organization,systems,622441,622448
+organization,system,623172,623178
+organization,systems,624183,624190
+person,"Q.E.D.
+
+Cor.",624905,624917
+organization,ABKI,630761,630765
+person,"Q.E.D.
+
+
+
+
+
+SCHOLIUM",633125,633145
+person,Cor,638355,638358
+person,EF,639157,639159
+person,I,641401,641402
+person,Galileo,642749,642756
+organization,ABNFEM,643968,643974
+organization,EF,644366,644368
+organization,ABNFEM,644447,644453
+person,Galileo,650364,650371
+organization,IR,653094,653096
+organization,CA,653471,653473
+person,Cor. 4,656776,656782
+organization,ABNFEM,657551,657557
+organization,PHQ,657831,657834
+organization,AMEC,658259,658263
+organization,BNFD,658265,658269
+person,Cor. 10,663071,663078
+person,Cor. 5,664663,664669
+organization,IG,665506,665508
+person,Lem. IV,665847,665854
+person,Lem. IV,666446,666453
+organization,EF,669811,669813
+organization,EACFDB,672098,672104
+person,Cor. 7,672566,672572
+person,Cor. 7,673351,673357
+organization,IUM,673920,673923
+person,elves,674388,674393
+person,Pr,674536,674538
+person,Cor. 7,678088,678094
+person,Cor. 2,678953,678959
+organization,IUM,679068,679071
+person,Lem. V,679139,679145
+person,Cor. 2,680165,680171
+person,Cor. 1,680451,680457
+person,I,681691,681692
+person,I,688793,688794
+person,Galileo,699060,699067
+person,Dr. Desaguliers,701838,701853
+person,persons,702452,702459
+organization,church,703017,703023
+organization,church,703815,703821
+person,Scholium,706217,706225
+organization,Scholium,706217,706225
+person,Cor. 7,708009,708015
+person,"Q.E.D.
+
+Cor.",711757,711769
+person,any one,715469,715476
+person,PQ,717791,717793
+person,"Q.E.D.
+
+Cor.",721942,721954
+person,Cor. Prop. LI,723750,723763
+person,Cor.,724172,724176
+organization,ABCDEF,725466,725472
+person,Cor.,727045,727049
+organization,PS,728685,728687
+person,"Q.E.D.
+
+Cor.",732523,732535
+organization,Prop. XLVII,737169,737180
+person,M. Sauveur,745317,745327
+organization,SEC,746607,746610
+organization,AFL,747289,747292
+organization,AFL,752273,752276
+organization,Case 1,755923,755929
+person,Cor. 10,763432,763439
+person,Cor. 8,763737,763743
+person,Cor. 9,763780,763786
+person,Cor. 11,763789,763796
+organization,degr,763922,763926
+person,Cor. 6,767072,767078
+person,philosophers,769121,769133
+person,Copernican,771721,771731
+person,Mars,772819,772823
+person,Mars,772874,772878
+person,Venus,772883,772888
+person,I,774391,774392
+organization,System of the Wor,775141,775158
+organization,System of the World,775141,775160
+person,readers,775954,775961
+organization,PHILOSOPHY,776307,776317
+person,philosophers,776490,776502
+organization,Nature,776512,776518
+organization,Nature,776587,776593
+person,man,776804,776807
+person,beast,776817,776822
+organization,experiments,777144,777155
+organization,experiments,777364,777375
+organization,Nature,777615,777621
+person,minds,779162,779167
+organization,Nature,779328,779334
+person,astronomers,781692,781703
+person,Borelli,782103,782110
+person,Townly,782125,782131
+organization,Microm,782139,782145
+organization,Microm.,782139,782146
+person,Cassini,782170,782177
+organization,Telescope,782185,782194
+person,Cassini,782206,782213
+person,Mr. Pound,782314,782323
+person,Cassini,784632,784639
+person,Mr. Huygens,785362,785373
+person,us,786589,786591
+person,Kepler,787577,787583
+organization,astronomers,787608,787619
+organization,astronomers,787825,787836
+person,Kepler,787898,787904
+person,Bullialdus,787909,787919
+person,Kepler,788516,788522
+person,Bullialdus,788553,788563
+person,Kepler,788660,788666
+person,Bullialdus,788695,788705
+organization,astronomers,789912,789923
+person,Phæ. I,790972,790978
+person,Cor. 6,790984,790990
+person,Phæn. V,791458,791465
+person,Phæn. IV,791505,791513
+person,Cor. 6,791519,791525
+person,Cor. 1,791749,791755
+person,Phæn. VI,792148,792156
+person,Cor. 1. Prop. XLV,792345,792362
+person,Cor. 2,793087,793093
+person,Ptolemy,794262,794269
+person,Vendelin,794309,794317
+person,Huygens,794322,794329
+person,Copernic,794338,794346
+person,Copernicus,794338,794348
+person,Street,794358,794364
+person,Tycho,794380,794385
+person,Tycho,794396,794401
+person,astronomers,795067,795078
+person,French,795173,795179
+person,Cor. Prop. III,795360,795374
+person,Cor. 9,795598,795604
+person,Mr. Huygens,796557,796568
+person,Mr. Huygens,796774,796785
+person,Kepler,798090,798096
+person,others,802329,802335
+person,Cor. 1,803249,803255
+organization,satellites,805290,805300
+person,Cor. 3,805305,805311
+person,Prop. LXV,805313,805322
+organization,satellites,805475,805485
+person,Cor. 2,805542,805548
+person,ter,805662,805665
+person,Jupiter,805723,805730
+person,Saturn,807115,807121
+person,Cor. 1,807408,807414
+person,Cor. 1,808426,808432
+person,Aristotle,809189,809198
+person,Des Cartes,809200,809210
+organization,Prop. LXIX,811634,811644
+organization,Law III,811994,812001
+person,"Q.E.D.
+
+Cor.",812280,812292
+person,Cor. 2,813243,813249
+person,Cor. 3,813412,813418
+person,Coro,814466,814470
+person,Cor. 1,814563,814569
+person,Cor. 2,814728,814734
+person,Huygenian,815203,815212
+organization,mines,820922,820927
+organization,Scholium of Prop. XXII,821909,821931
+person,receiver,822528,822536
+organization,Laws,823440,823444
+person,Cor. 2,823791,823797
+organization,Laws of Motion,825330,825344
+organization,Phænomena,826130,826139
+person,Cor. 1,826639,826645
+organization,Prop. LXVI,826776,826786
+person,astronomers,827550,827561
+person,Ju,828040,828042
+organization,comets,829631,829637
+person,M,832955,832956
+person,Mr. N. Mercator,832955,832970
+organization,Astronomy,832978,832987
+person,ned,833040,833043
+person,M. Cassini,833497,833507
+person,astronomers,834454,834465
+person,Mr. Norwood,834879,834890
+person,M. Picart,835138,835147
+person,M. Cassini,835293,835303
+organization,Observatory of Paris,835405,835425
+person,son,835435,835438
+organization,Observatory,835467,835478
+organization,Citadel of Dunkirk,835486,835504
+organization,APBQ,837444,837448
+organization,ACQqca,837584,837590
+person,AC,839595,839597
+person,Cor. 3,839970,839976
+organization,ACca,840577,840581
+person,ce,840762,840764
+person,Picart,841622,841628
+person,Cassini,843822,843829
+person,Mr. Pound,843975,843984
+organization,The Times,844122,844131
+organization,i,848165,848166
+organization,astronomers,848400,848411
+person,M. Richer,848610,848619
+organization,clock,848779,848784
+person,Dr. Halley,849309,849319
+person,M. Varin,849738,849746
+person,M. des Hayes,849751,849763
+organization,Royal Observatory of Paris,849830,849856
+person,M. Couplet,850230,850240
+organization,Royal Observatory of Paris,850285,850311
+person,M. des Hayes,851109,851121
+person,P. Feuillé,851451,851461
+person,M. Picart,852568,852577
+person,M. de la Hire,852748,852761
+organization,pendulum clock,853162,853176
+organization,isochronal pendulums,853533,853553
+person,French astronomers,853656,853674
+organization,Royal Observatory of Paris,853902,853928
+person,M. Richer,854019,854028
+person,M. des Hayes,854128,854140
+person,M. Richer,854730,854739
+person,M. Richer,854862,854871
+person,observers,855167,855176
+person,gentleman,855186,855195
+person,Cor. 20,855633,855640
+person,Cor. 2,856356,856362
+person,Prop. LXVI,856377,856387
+person,Cor. 9,856694,856700
+person,Prop. LXVI,856702,856712
+person,Cor. 7 and 8,857134,857146
+person,Cor. 11,857383,857390
+person,Cor. 10,857534,857541
+person,Cor. 6,857635,857641
+person,astronomers,857828,857839
+person,astronomers,857904,857915
+person,Cor. 14,858321,858328
+person,Prop. LXVI,858330,858340
+person,Lem. 10,858492,858499
+person,Cor. 16,858505,858512
+person,Cor. 16,859040,859047
+person,Cor. 19,861035,861042
+organization,luminaries,864292,864302
+organization,ApEP,866309,866313
+person,Colepress,869200,869209
+person,Sturmy,869214,869220
+person,luminaries,869498,869508
+person,Dr. Halley,871985,871995
+organization,sea men,872035,872042
+organization,CADB,873885,873889
+organization,PT,874930,874932
+person,Cor. 17,875063,875070
+person,Prop,875072,875076
+person,Cor. 9,878858,878864
+organization,CPA,879380,879383
+organization,TCG,880724,880727
+person,astronomers,882868,882879
+person,Cor. 2,882937,882943
+person,astronomers,892811,892822
+organization,LM,893883,893885
+organization,calculus,894847,894855
+organization,PM,894885,894887
+organization,IT PH,896464,896469
+organization,IT PH,896660,896665
+person,Cor. 1,898680,898686
+person,P,898702,898703
+person,M,898708,898709
+person,"Q.E.D.
+
+Cor.",899623,899635
+person,Qpmaq,902407,902412
+person,"Q.E.D.
+
+Cor.",905905,905917
+organization,PM,908649,908651
+organization,ML,908677,908679
+organization,ML,908685,908687
+person,her,909558,909561
+organization,AZ²,911040,911043
+organization,AZ²,911247,911250
+organization,DAG,919166,919169
+person,Cor,920197,920200
+organization,SCHOLIUM,920509,920517
+person,Mr. Machin,920522,920532
+organization,Astron.,920534,920541
+person,Prof. Gresh.,920543,920555
+person,Dr. Henry Pemberton,920561,920580
+person,Mr. Machin,920834,920844
+person,Cor. Prop.,923035,923045
+person,Cor. Prop. XXXI,923035,923050
+person,sun,924665,924668
+person,sun,924829,924832
+person,sun,925099,925102
+person,Cor,926267,926270
+organization,HK,927368,927370
+organization,Prop. XXX,928555,928564
+organization,IT PG AZ,928599,928607
+organization,PG,930409,930411
+organization,IT AZ TG,930871,930879
+person,Cor. 3,933485,933491
+person,AH,935872,935874
+person,SCHOLIUM,936383,936391
+person,Cor. 6,936766,936772
+person,Prop. LXVI,942215,942225
+person,Horrox,942534,942540
+person,Dr. Halley,942659,942669
+organization,CTD,943596,943599
+organization,Royal Observatory of Greenwich,948247,948277
+organization,Observatory,948568,948579
+organization,Royal Observatory,948601,948618
+person,Cor,950558,950561
+person,Samuel Sturmy,951789,951802
+person,Samuel Colepress,952240,952256
+person,Sturmy,952701,952707
+person,Sturmy,953163,953169
+person,St. Michael,958133,958144
+person,Cor. 2,959014,959020
+person,Cor. 3,959322,959328
+person,Cor. 14,959445,959452
+person,Prop. LXVI,959454,959464
+person,astronomers,960193,960204
+person,me,960718,960720
+person,Cor.,961113,961117
+person,Cor. Prop. II,961877,961890
+person,Cor. Prop. III,961877,961891
+organization,Prop. XX,962537,962545
+person,Cor. 10,963945,963952
+person,"Q.E.I.
+
+Cor.",965648,965660
+organization,APEp,966247,966251
+organization,apAPepE,966654,966661
+person,Lem,971364,971367
+person,Lem. 1,971364,971370
+person,Lem. 1,971666,971672
+person,"Q.E.D.
+
+
+
+
+
+LEMMA III.",972993,973015
+person,Cor. 16,975257,975264
+person,Prop. LXVI. Book 1,975266,975284
+person,Lem. III,976360,976368
+person,Lem. II,977484,977491
+organization,MA IV,979290,979295
+person,astronomers,979409,979420
+person,Jupiter,983752,983759
+person,Jupiter,984429,984436
+person,Mr. Flamsted,985344,985356
+person,Hevelius,986303,986311
+person,Hevelius,989638,989646
+person,Hevelius,989957,989965
+person,Hevelius,990418,990426
+person,Hevelius,990727,990735
+person,Cys,991371,991374
+person,Cysatus,991371,991378
+person,Kep,991605,991608
+person,Kepler,991605,991611
+person,Mr. Flamsted,991732,991744
+person,Cor. 2,993165,993171
+organization,comets,993229,993235
+organization,comets,993650,993656
+organization,comets,993860,993866
+person,writers,994827,994834
+person,Cor. 1,995943,995949
+person,Cor. 1,996023,996029
+organization,comets,996268,996274
+person,Cor. 2,996722,996728
+person,Cor. 7,996865,996871
+person,b,1000259,1000260
+person,b,1000265,1000266
+person,AH,1000347,1000349
+person,ME,1000459,1000461
+person,HI,1001073,1001075
+person,IK,1001077,1001079
+person,KL,1001081,1001083
+person,LM,1001085,1001087
+person,HA,1001159,1001161
+person,IB,1001163,1001165
+person,KC,1001167,1001169
+person,LD,1001171,1001173
+person,ME,1001175,1001177
+person,HS,1001222,1001224
+person,AC,1005283,1005285
+person,Cor. 6,1005398,1005404
+person,AC,1005702,1005704
+person,"Q.E.D.
+
+Cor.",1005861,1005873
+person,Cor. 7,1006584,1006590
+person,Cor. 9,1007021,1007027
+person,Prop. XVI,1007029,1007038
+person,Lem,1008453,1008456
+person,Lem. VI,1008453,1008460
+person,Cor. 3,1008881,1008887
+organization,Prop. XIX.,1012057,1012067
+person,Lem. VII.,1012351,1012360
+person,Lem. VIII.,1012384,1012394
+person,BE,1012400,1012402
+person,Lem. XI.,1012407,1012415
+person,Cor. Lem. X.,1012549,1012561
+person,Flamsted,1014133,1014141
+person,Dr. Halley,1014216,1014226
+person,♒,1014698,1014699
+person,♒,1014784,1014785
+person,1681,1015112,1015116
+person,Bayer's ζ,1015809,1015818
+person,HO,1016405,1016407
+person,Mr. Pound,1016697,1016706
+person,Mr. Pound,1020497,1020506
+person,Flamsted,1021097,1021105
+person,Dr. Halley,1023127,1023137
+person,Gottfried Kirch,1024896,1024911
+person,Mr. Pound,1025227,1025236
+person,Dr. Halley,1025238,1025248
+person,Flamsted,1025685,1025693
+person,Dr. Halley,1026721,1026731
+person,Julius Cæsar,1026865,1026877
+organization,consulate,1026911,1026920
+organization,Lampadius,1026924,1026933
+person,Lampadius,1026924,1026933
+organization,Ores,1026938,1026942
+person,Orestes,1026938,1026945
+person,Cæsar,1027093,1027098
+person,♒,1028431,1028432
+person,persons,1030177,1030184
+person,O. S. Ponthæus,1030218,1030232
+person,Ponthæus,1030463,1030471
+person,Cellius,1030505,1030512
+person,Cassini,1030580,1030587
+person,Ga,1030684,1030686
+person,Galletius,1030684,1030693
+person,Ponthæus,1030962,1030970
+person,Cellius,1031036,1031043
+person,Galletius,1031126,1031135
+organization,University of La Fleche,1031191,1031214
+person,P. Ango,1031295,1031302
+person,Dr. Halley,1031589,1031599
+person,young man,1031871,1031880
+person,Mr. Arthur Storer,1032254,1032271
+organization,Spica,1032442,1032447
+person,Montenari,1032773,1032782
+organization,Spica,1032975,1032980
+person,Ponthæus,1033063,1033071
+person,Cellius,1033178,1033185
+person,P. Ango,1033197,1033204
+person,Montenari,1033242,1033251
+person,Montenari,1033931,1033940
+person,Dr. Hook,1034270,1034278
+person,Montenari,1034462,1034471
+person,Hook,1034851,1034855
+person,Montenari,1034860,1034869
+person,Montenari,1035031,1035040
+person,Spica,1035088,1035093
+person,Hook,1035144,1035148
+person,Montenari,1035150,1035159
+person,Ango,1035165,1035169
+person,Hook,1035397,1035401
+person,Montenari,1035406,1035415
+person,Hook,1035544,1035548
+person,Montenari,1035585,1035594
+person,Mr. Zimmerman,1035847,1035860
+person,Montenari,1036029,1036038
+person,Montenari,1036249,1036258
+person,Ango,1036260,1036264
+person,Hook,1036270,1036274
+person,Ponthæus,1036458,1036466
+person,Galletius,1036471,1036480
+person,Cellius,1036536,1036543
+person,Ponthæus,1036653,1036661
+person,Cellius,1036666,1036673
+person,Galletius,1036792,1036801
+person,Montenari,1036894,1036903
+person,Hook,1036905,1036909
+person,Ango,1036911,1036915
+person,Ponthæus,1036967,1036975
+person,Cellius,1036980,1036987
+person,Montenari,1037223,1037232
+person,Cellius,1037274,1037281
+person,Montenari,1038466,1038475
+person,I,1040171,1040172
+person,Ponthæus,1040387,1040395
+person,Mr. Flamsted,1040658,1040670
+person,Bayer,1040870,1040875
+person,Bayer,1041007,1041012
+person,Ponthæus,1041417,1041425
+person,Cassiopeia,1041848,1041858
+person,Schedir,1041900,1041907
+person,Scheat,1042100,1042106
+person,Perseus,1042954,1042961
+person,Ponthæus,1043720,1043728
+person,rth,1044810,1044813
+person,Egyptians,1048736,1048745
+organization,telescope,1049342,1049351
+person,Tycho,1051817,1051822
+organization,comets,1052232,1052238
+organization,comets,1052357,1052363
+person,spectator,1052428,1052437
+person,spectator,1052530,1052539
+person,ogress,1054404,1054410
+person,authors,1055113,1055120
+organization,Via Lactea,1055288,1055298
+organization,comets,1055436,1055442
+person,Cor. Prop. XXII,1056397,1056412
+person,Kepler,1061137,1061143
+person,author,1061685,1061691
+person,man- ner,1062556,1062564
+person,philosophers,1065985,1065997
+person,Hevelius,1067249,1067257
+person,young man,1068152,1068161
+person,Montenari,1068318,1068327
+person,Mr. Storer,1068449,1068459
+person,St. N. P. Valentinus Estancius,1069113,1069143
+organization,Saxon Chronicle,1070141,1070156
+person,Hevelius,1070394,1070402
+person,Simeon,1070420,1070426
+organization,Durham,1070440,1070446
+person,Matthew Paris,1070649,1070662
+person,Aristotle,1070846,1070855
+person,Aristotle,1071238,1071247
+person,Orion,1071535,1071540
+organization,comets,1071981,1071987
+organization,Prop. XXI.,1073549,1073559
+person,Prop. XVI.,1073914,1073924
+person,elves,1076634,1076639
+person,Hevelius,1077077,1077085
+organization,wn,1077102,1077104
+person,Dr. Halley,1077228,1077238
+person,Dantzick,1077709,1077717
+person,Dr. Halley,1078004,1078014
+organization,"Appar. Time
+
+at Dantzick",1078017,1078041
+organization,Orb,1078134,1078137
+person,Aldebaran,1079226,1079235
+person,Aries,1079300,1079305
+person,Aldebaran,1079344,1079353
+person,Aries,1079418,1079423
+organization,Palilicium,1079462,1079472
+person,Andromeda,1079518,1079527
+organization,Palilicium,1079575,1079585
+person,Andromeda,1079632,1079641
+organization,Palilicium,1079699,1079709
+person,Andromeda,1079755,1079764
+organization,Palilicium,1079810,1079820
+person,Andromeda,1079866,1079875
+organization,Palilicium,1079923,1079933
+person,Palilicium,1079923,1079933
+person,♈,1079981,1079982
+person,♈,1080055,1080056
+person,Dantzick,1080637,1080645
+person,O. S.,1080647,1080652
+person,M. Auzout,1081086,1081095
+person,Dr. Hooke,1081193,1081202
+person,M. Auzout,1081357,1081366
+person,Dr. Hooke,1081751,1081760
+person,M. Auzout,1081850,1081859
+person,M. Petit,1081890,1081898
+person,Dr. Hooke,1082464,1082473
+person,M. Gottignies,1082502,1082515
+person,Dr. Hooke,1082613,1082622
+person,M. Gottignies,1082646,1082659
+person,M. Gottignies,1082719,1082732
+person,M. Auzout,1082922,1082931
+person,Dr. Hooke,1082951,1082960
+person,r. Hooke,1082952,1082960
+person,M. Auzout,1083267,1083276
+person,M. Auzout,1083623,1083632
+person,M. Petit,1083649,1083657
+person,Hevelius,1083659,1083667
+person,engraver,1083720,1083728
+person,Hevelius,1083819,1083827
+person,M. Auzout,1083846,1083855
+person,Dr. Halley,1085351,1085361
+person,Dr. Halley,1085659,1085669
+person,Mr. Flamsted,1085738,1085750
+person,1683,1085778,1085782
+organization,"Comet's
+
+Long",1085806,1085819
+organization,"Comet's
+
+Long",1085845,1085858
+organization,South,1086954,1086959
+person,Dr. Halley,1087411,1087421
+organization,orbis magnus,1087639,1087651
+person,Mr. Flamste,1087771,1087782
+person,Mr. Flamsted,1087771,1087783
+person,Mr. Bradley,1089073,1089084
+organization,Savilian Professor of Astronomy,1089086,1089117
+organization,Oxford,1089121,1089127
+person,Mr. Bradley,1089471,1089482
+person,Mr. Pound,1089544,1089553
+person,Dr. Halley,1089559,1089569
+person,Dr. Halley,1091209,1091219
+organization,zodiac,1092989,1092995
+person,Cassiopeia,1094525,1094535
+person,Cornelius Gemma,1094551,1094566
+person,Tycho Brahe,1094853,1094864
+person,Kepler,1096140,1096146
+person,Hipparchus,1096457,1096467
+organization,catalogue,1096491,1096500
+organization,comets,1098213,1098219
+person,Bodie,1098541,1098546
+person,Mr. Boyle,1098640,1098649
+person,Being,1100320,1100325
+organization,fixed stars,1100338,1100349
+organization,systems,1100380,1100387
+person,One,1100474,1100477
+organization,fixed stars,1100513,1100524
+organization,systems,1100628,1100635
+organization,systems,1100650,1100657
+organization,systems,1100753,1100760
+person,Being,1100806,1100811
+person,Lord,1100869,1100873
+person,God,1100944,1100947
+person,God,1100985,1100988
+person,Deity,1101044,1101049
+person,God,1101069,1101072
+person,God,1101123,1101126
+person,God,1101187,1101190
+person,Lord God,1101310,1101318
+person,God,1101315,1101318
+person,God,1101335,1101338
+person,God,1101345,1101348
+organization,Israel,1101361,1101367
+organization,Israel,1101465,1101471
+person,servants,1101579,1101587
+person,Lord,1101623,1101627
+person,lord,1101639,1101643
+person,God,1101718,1101721
+person,God,1101798,1101801
+person,God,1101855,1101858
+person,Maker,1102550,1102555
+person,Lord,1102560,1102564
+person,soul,1102615,1102619
+person,man,1102877,1102880
+person,God,1102970,1102973
+person,man,1102981,1102984
+person,man,1103051,1103054
+person,God,1103118,1103121
+person,God,1103134,1103137
+person,God,1103347,1103350
+person,God,1103445,1103448
+person,God,1103488,1103491
+person,blind man,1103799,1103808
+person,God,1103888,1103891
+person,God,1104529,1104532
+person,god,1104758,1104761
+person,Being,1105106,1105111
+person,God,1105159,1105162
+person,God,1105336,1105339
+person,mankind,1105367,1105374
+person,God,1105480,1105483
+person,Nat,1105563,1105566
+organization,Natural Philosophy,1105563,1105581
+person,Spirit,1107530,1107536
+person,Spirit,1107619,1107625
+person,Spirit,1108039,1108045
+person,Dr. Pocock,1108496,1108506
+person,John,1108671,1108675
+person,Moses,1108692,1108697
+person,Aaron,1108729,1108734
+person,Pharaoh,1108749,1108756
+organization,Heathens,1108865,1108873
+organization,Ancients,1108967,1108975
+person,Pythagoras,1108980,1108990
+person,Thales,1109023,1109029
+person,Anaxagoros,1109031,1109041
+person,Virgil,1109043,1109049
+person,Æneid,1109081,1109086
+person,Philo Allegor,1109107,1109120
+person,Aratus,1109150,1109156
+person,St. Paul,1109222,1109230
+person,St. John,1109256,1109264
+person,Moses,1109292,1109297
+person,David,1109336,1109341
+person,Solomon,1109371,1109378
+person,Job,1109404,1109407
+person,Jeremiah,1109432,1109440
+organization,Idolaters,1109466,1109475
+person,Philolaus,1110214,1110223
+person,Aristarchus of Samos,1110225,1110245
+person,Plato,1110247,1110252
+organization,Pythagoreans,1110299,1110311
+person,Anaximander,1110342,1110353
+organization,Romans,1110415,1110421
+person,Numa Pompilius,1110423,1110437
+person,Vesta,1110541,1110546
+organization,Egyptians,1110630,1110639
+person,Egyptians,1110630,1110639
+organization,nations,1110748,1110755
+person,Greeks,1110816,1110822
+person,Egyptians,1111040,1111049
+organization,Egyptians,1111040,1111049
+person,Anaxagoras,1111263,1111273
+person,xagoras,1111266,1111273
+person,Democritus,1111275,1111285
+person,Eudoxus,1111744,1111751
+person,Calippus,1111753,1111761
+person,Aristotle,1111767,1111776
+organization,Gree,1111880,1111884
+organization,Greeks,1111880,1111886
+organization,Chaldeans,1111995,1112004
+person,Chaldeans,1111995,1112004
+person,astronomers,1112550,1112561
+person,ancients,1113081,1113089
+person,philosophers,1113218,1113230
+person,Kepler,1113302,1113308
+person,Des Cartes,1113313,1113323
+person,Borelli,1113381,1113388
+person,Hooke,1113390,1113395
+organization,nation,1113415,1113421
+organization,AFB,1115169,1115172
+organization,Princip. Math.,1116215,1116229
+organization,Principles of Philosophy,1118311,1118335
+person,Cor. III,1118920,1118928
+person,Prop. IV,1118930,1118938
+person,xis,1119456,1119459
+person,Cor. 1,1120017,1120023
+person,Venus,1121719,1121724
+person,Mercury,1121823,1121830
+person,Cor. VI,1122925,1122932
+person,Mr. Flamsted,1123189,1123201
+person,d,1123200,1123201
+person,Gali,1124282,1124286
+person,Galileo,1124282,1124289
+person,Borelli,1124318,1124325
+person,"Townley
+
+"" Flamsted",1124442,1124461
+person,Mr. Flamsted,1124645,1124657
+person,Cassini,1124867,1124874
+person,astronomers,1125269,1125280
+person,Jupiter,1126314,1126321
+person,Mr. Flamsted,1126478,1126490
+person,Mr. Romer,1127084,1127093
+person,Mr. Flamsted,1127358,1127370
+organization,Jupiter,1127514,1127521
+person,Jupiter,1127690,1127697
+person,Mr. Flamsted,1127736,1127748
+person,Copernican,1127768,1127778
+person,K,1127795,1127796
+person,Kepler,1127795,1127801
+person,Mr. Huygens,1128680,1128691
+person,Dr. Halley,1128696,1128706
+person,Prop. III Cor. IV,1129117,1129134
+person,Cor. VI,1129785,1129792
+person,J,1130135,1130136
+person,Tycho,1130297,1130302
+person,Co,1130368,1130370
+person,Copernicus,1130368,1130378
+person,Kepler,1130450,1130456
+person,er,1130454,1130456
+person,Bullialdus,1130461,1130471
+person,Cor. VI,1130815,1130822
+organization,astronomers,1131483,1131494
+person,Kepler,1131533,1131539
+person,Bullialdus,1131624,1131634
+person,Kepler,1131815,1131821
+person,Bullialdus,1131826,1131836
+person,Ptolemy,1132198,1132205
+person,Kepler,1132207,1132213
+person,Bulliald,1132234,1132242
+person,Bullialdus,1132234,1132244
+person,Hevelius,1132246,1132254
+person,Ricciolus,1132260,1132269
+person,Flamsted,1132288,1132296
+person,Tycho,1132316,1132321
+person,Vendelin,1132331,1132339
+person,Copernicus,1132348,1132358
+person,Kircher,1132368,1132375
+person,Tycho,1132408,1132413
+person,others,1132906,1132912
+organization,astronomers,1133081,1133092
+person,Cor. VI,1133121,1133128
+person,Prop. IV,1133130,1133138
+person,French,1133622,1133628
+person,Mr. Huygens,1134014,1134025
+person,Cor. IV,1134306,1134313
+organization,Prop. LVII,1134341,1134351
+person,Copernicus,1135184,1135194
+person,Tychonic,1135206,1135214
+person,astronomers,1136227,1136238
+person,Mr. Flamsted,1137573,1137585
+person,Cor. II,1137900,1137907
+person,Cor. IV,1139078,1139085
+person,Ricciolus,1139181,1139190
+person,Vendelin,1139195,1139203
+person,Kepler,1139367,1139373
+person,Tycho,1139380,1139385
+person,Flamsted,1139542,1139550
+person,Ricciolus,1140209,1140218
+person,Vendelin,1140223,1140231
+organization,computati,1140423,1140432
+person,Mr. Flamsted,1140678,1140690
+person,Mr. Huygens,1140925,1140936
+person,Dr. Halley,1140941,1140951
+person,Galletius,1140977,1140986
+person,Hooke,1141017,1141022
+organization,ABD,1141793,1141796
+person,Mr. Picart,1142858,1142868
+person,Hevelius,1143167,1143175
+person,Mr. Huygens,1143432,1143443
+person,Mr. Huygens,1143648,1143659
+person,Hevelius,1144105,1144113
+person,Galletius,1144115,1144124
+person,Dr. Halley,1144130,1144140
+person,Mr. Crabtrie,1144207,1144219
+person,Horrox,1144235,1144241
+person,Hevelius,1144284,1144292
+person,Hugenius,1144297,1144305
+organization,observatory,1144501,1144512
+person,Mr. Flamsted,1144908,1144920
+organization,Mercury,1146392,1146399
+person,God,1146529,1146532
+person,I,1149281,1149282
+person,others,1149805,1149811
+person,Cor. 1,1150598,1150604
+person,Jupiter,1152522,1152529
+person,Jupiter,1152552,1152559
+person,Jupiter,1152620,1152627
+person,Jupiter,1152717,1152724
+person,Jupiter,1152726,1152733
+person,Jupiter,1152840,1152847
+person,Ju- piter,1152875,1152884
+person,Jupiter,1152968,1152975
+person,Jupiter,1153001,1153008
+person,philosophers,1153374,1153386
+organization,ACB,1155997,1156000
+person,Jupiter,1157171,1157178
+person,Cor. III,1158208,1158216
+person,Cor. IV,1159434,1159441
+person,Prop. LXXVI,1159443,1159454
+person,Cor. II,1159821,1159828
+person,Prop. LXXVI,1159830,1159841
+organization,planetary system,1160378,1160394
+person,Cor. III,1163795,1163803
+person,authors,1163922,1163929
+organization,system,1164186,1164192
+organization,system,1164237,1164243
+person,Cor. IV,1164549,1164556
+organization,system,1164673,1164679
+person,Jupiter,1164940,1164947
+person,Jupiter,1165061,1165068
+organization,system,1165439,1165445
+person,Cor. 1,1166058,1166064
+organization,planets,1166102,1166109
+person,astronomers,1167080,1167091
+organization,astronomers,1167080,1167091
+organization,Prop. LX,1168247,1168255
+organization,exterior planets,1168411,1168427
+person,Cor. VI.,1168588,1168596
+person,VII,1168601,1168604
+person,Prop. LXVI,1168606,1168616
+organization,exterior planets,1168725,1168741
+person,Cor. XI,1168992,1168999
+person,Prop. LXVI,1169007,1169017
+person,Cor. XVI,1169096,1169104
+person,Prop. LXVI,1169106,1169116
+organization,apogeon,1170473,1170480
+person,astronomers,1171209,1171220
+organization,astronomers,1171209,1171220
+person,Mr. Horrox,1171487,1171497
+person,Mr. Flamsted,1171505,1171517
+person,Tycho,1171832,1171837
+person,astronomers,1172100,1172111
+person,Cor. XIV,1172593,1172601
+person,Prop. LXVI,1172603,1172613
+person,Cor. I,1172779,1172785
+person,Lem. X,1172794,1172800
+person,Cor. XVI,1172806,1172814
+organization,astronomers,1173676,1173687
+person,Cor. XVI,1174288,1174296
+person,Prop. LXVI,1174298,1174308
+organization,Corollary,1175517,1175526
+person,astronomers,1175780,1175791
+person,astronomers,1176209,1176220
+person,centripe,1176460,1176468
+person,Cor. XXII,1176494,1176503
+person,Prop. LXVI,1176505,1176515
+person,astronomer,1178267,1178277
+person,Cor. XVIII,1178939,1178949
+person,Jupiter,1178984,1178991
+person,Cor. XIX,1179362,1179370
+person,Prop. LXVI,1179376,1179386
+organization,luminaries,1179975,1179985
+organization,ce,1180998,1181000
+organization,ApEP,1183961,1183965
+organization,KHkC,1185678,1185682
+person,Colepress,1186821,1186830
+person,Sturmy,1186835,1186841
+person,luminaries,1187122,1187132
+person,ters,1191528,1191532
+person,Sturmy,1193431,1193437
+person,Flamsted,1194608,1194616
+organization,EF,1195829,1195831
+organization,PAGB,1197931,1197935
+organization,LM,1198318,1198320
+organization,SM,1198338,1198340
+organization,TM,1198365,1198367
+person,Cor. XVII,1199027,1199036
+person,Prop. LXVI,1199038,1199048
+organization,ADBE,1200370,1200374
+person,French,1202057,1202063
+organization,luminaries,1205203,1205213
+person,Sturmy,1205237,1205243
+organization,luminaries,1205333,1205343
+person,Cor. XIV,1208224,1208232
+person,Cor. II,1209518,1209525
+organization,system of the planets,1211042,1211063
+person,astronomers,1214446,1214457
+person,Kepler,1217118,1217124
+person,Dr. Wallis,1217143,1217153
+person,Sir Christopher Wren,1217158,1217178
+person,Kepler,1217369,1217375
+person,Sir Christopher Wren,1217536,1217556
+person,Hevelius,1217603,1217611
+person,Saturn,1219007,1219013
+person,Dr. Hooke,1219118,1219127
+person,Mr. Flamsted,1219644,1219656
+person,Hevelius,1220049,1220057
+person,Saturn,1221059,1221065
+person,Saturn,1221194,1221200
+person,Saturn,1221338,1221344
+person,Saturn,1221361,1221367
+person,Jupite,1221390,1221396
+person,Jupiter,1221390,1221397
+person,Mr. Flamsted,1223749,1223761
+person,Cassini,1223930,1223937
+person,Dr. Halley,1224051,1224061
+person,Halley,1224055,1224061
+person,elf,1224288,1224291
+person,Aristotle,1225883,1225892
+person,Aristotle,1226277,1226286
+person,Orion,1226538,1226543
+person,Justin,1226621,1226627
+organization,Lib. 37,1226629,1226636
+person,Hevelius,1227188,1227196
+person,Simeon,1227209,1227215
+organization,Durham,1227229,1227235
+person,Matthew Paris,1227405,1227418
+organization,Append. Matth. Paris,1228043,1228063
+organization,Hist. Ang.,1228065,1228075
+person,Hist,1229114,1229118
+person,Leo,1229470,1229473
+person,vulgar,1229745,1229751
+person,P. Valent. Estancius,1230401,1230421
+person,Cassini,1231023,1231030
+person,Hevelius,1232179,1232187
+person,Hevelius,1232489,1232497
+person,Hevelius,1232953,1232961
+person,Hevelius,1233255,1233263
+person,Cysatus,1233899,1233906
+organization,Cysatus,1233899,1233906
+person,Kepler,1234095,1234101
+person,Flamsted,1234216,1234224
+person,Os Pegasi,1234577,1234586
+organization,comets,1235347,1235353
+organization,comets,1235587,1235593
+organization,comets,1235945,1235951
+person,Egyptians,1239475,1239484
+person,others,1242430,1242436
+person,Tycho,1242588,1242593
+person,Cor. Prop. XXII,1243842,1243857
+organization,Cor. Prop. XXII,1243842,1243857
+person,Hooke,1244011,1244016
+organization,AIR,1244580,1244583
+person,Kepler,1246392,1246398
+person,author,1246936,1246942
+person,I,1247365,1247366
+organization,comets,1248426,1248432
+organization,comets,1248734,1248740
+person,spectator,1248804,1248813
+person,spectator,1248903,1248912
+organization,comets,1250101,1250107
+organization,comets,1250264,1250270
+person,spectators,1251876,1251886
+person,Le,1254622,1254624
+organization,circum-solar force,1255476,1255494
+person,Co,1255558,1255560
+person,Cor. I,1255558,1255564
+person,us,1256120,1256122
+organization,zodiac,1256922,1256928
+person,Cor. VII,1257288,1257296
+person,Prop. XVI,1257298,1257307
+organization,orbis magnus,1258485,1258497
+person,Tab,1262109,1262112
+person,Dr. Halley,1263834,1263844
+person,Regiomontanus,1266197,1266210
+person,LEMMA,1268858,1268863
+person,Lem II,1272023,1272029
+person,Lem. II,1272546,1272553
+person,LEMMA V,1273710,1273717
+person,mathematicians,1275773,1275787
+person,Lem. II.,1276001,1276009
+person,Lem. I,1276536,1276542
+person,Q.E.F.,1278481,1278487
+organization,SYSTEM OF THE WORLD,1278504,1278523
+organization,SYSTEM OF THE WORLD,1278552,1278571
+person,astronomers,1281444,1281455
+organization,orbis magnus,1286150,1286162
+person,Æquinoxes,1286768,1286777
+person,Apsides,1287376,1287383
+person,author,1287769,1287775
+person,Cor. 2,1287878,1287884
+organization,zodiac,1289005,1289011
+organization,Conic Sections,1290537,1290551
+person,Norwood,1291504,1291511
+person,Picart,1291516,1291522
+person,Cassini,1291531,1291538
+person,ces,1293552,1293555
+person,God,1294260,1294263
+person,b dies,1296028,1296034
+person,Saturn,1296129,1296135
+person,Descartes,1297121,1297130
+person,Cartesius,1302561,1302570
+person,Cartesius,1302611,1302620
+person,ancients,1304917,1304925
+person,Pappus,1304953,1304959
+person,Cartesius,1304978,1304987
+person,Huygenian,1306968,1306977
+person,Jupiter,1307653,1307660
+organization,pendulum clocks,1309471,1309486
