@@ -17,7 +17,7 @@ from collections import defaultdict
 CORPUS_FILE = "corpus.txt"
 CSV_FILE    = "query.csv"
 OUTPUT_FILE = "alias_counts.csv"
-CASE_SENSITIVE = False
+CASE_SENSITIVE = True
 # ─────────────────────────────────────────────────────────────────────────────
 
 
