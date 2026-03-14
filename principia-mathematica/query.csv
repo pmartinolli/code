@@ -1,12 +1,28 @@
 value,valueLabel,qualifierValue
-http://www.wikidata.org/entity/Q354631,Jeremiah Horrocks,Horrox
-http://www.wikidata.org/entity/Q354631,Jeremiah Horrocks,Mr. Horrox
 http://www.wikidata.org/entity/Q56202338,Ancient Egyptians,Egyptians
 http://www.wikidata.org/entity/Q1651392,Romans,Romans
 http://www.wikidata.org/entity/Q9047,Gottfried Wilhelm Leibniz,Leibnitz
 http://www.wikidata.org/entity/Q9047,Gottfried Wilhelm Leibniz,Mr. Leibnitz
 http://www.wikidata.org/entity/Q3112766,Isaac Vossius,Ifaaco Voffio
 http://www.wikidata.org/entity/Q3112766,Isaac Vossius,Isaaco Vossio
+http://www.wikidata.org/entity/Q461340,"Paris Observatory, PSL University",Royal Observatory of Paris
+http://www.wikidata.org/entity/Q461340,"Paris Observatory, PSL University",Royal Observatory at Paris
+http://www.wikidata.org/entity/Q192988,Royal Observatory,Royal Observatory at Greenwich
+http://www.wikidata.org/entity/Q192988,Royal Observatory,Royal Observatory of Greenwich
+http://www.wikidata.org/entity/Q25688688,ancient Greeks,Greeks
+http://www.wikidata.org/entity/Q178710,Vesta,Vesta
+http://www.wikidata.org/entity/Q2983591,collège Henri-IV de La Flèche,University of La Fleche
+http://www.wikidata.org/entity/Q332342,Trinity College,Trinity College
+http://www.wikidata.org/entity/Q3746490,Flavius Lampadius,Lampadius
+http://www.wikidata.org/entity/Q41866,Justinian I,Justin
+http://www.wikidata.org/entity/Q3435583,Robert Kirk,Mr. Kirk
+http://www.wikidata.org/entity/Q43393,Robert Boyle,Mr. Boyle
+http://www.wikidata.org/entity/Q3242107,Chaldeans,Chaldeans
+http://www.wikidata.org/entity/Q721703,Rufius Gennadius Probus Orestes,Orestes
+http://www.wikidata.org/entity/Q76365,Regiomontanus,Regiomontanus
+http://www.wikidata.org/entity/Q1048,Julius Caesar,Julius Cæsar
+http://www.wikidata.org/entity/Q138341287,Ponthæus,O. S. Ponthæus
+http://www.wikidata.org/entity/Q138341287,Ponthæus,Ponthæus
 http://www.wikidata.org/entity/Q111281478,Johann Alexander Cellius,Cellius
 http://www.wikidata.org/entity/Q46822655,Franciscus Galletius,Galletius
 http://www.wikidata.org/entity/Q34604409,Pierre Ango,P. Ango
@@ -17,6 +33,7 @@ http://www.wikidata.org/entity/Q138341375,Valentinus Estancius,N. P. Valentinus 
 http://www.wikidata.org/entity/Q138341375,Valentinus Estancius,P. Valent. Estancius
 http://www.wikidata.org/entity/Q940417,Symeon of Durham,"Simeon, the monk of Durham"
 http://www.wikidata.org/entity/Q369366,Matthew Paris,Matthew Paris
+http://www.wikidata.org/entity/Q369366,Matthew Paris,Matth. Paris
 http://www.wikidata.org/entity/Q868,Aristotle,Aristotle
 http://www.wikidata.org/entity/Q376856,Adrien Auzout,M. Auzout
 http://www.wikidata.org/entity/Q3386576,Pierre Petit,M. Petit
@@ -33,6 +50,7 @@ http://www.wikidata.org/entity/Q51676,Aaron,Aaron
 http://www.wikidata.org/entity/Q10261,Pythagoras,Pythagoras
 http://www.wikidata.org/entity/Q1541,Cicero,Cicer.
 http://www.wikidata.org/entity/Q36303,Thales,Thales
+http://www.wikidata.org/entity/Q83041,Anaxagoras,Anaxagoras
 http://www.wikidata.org/entity/Q83041,Anaxagoras,Anaxagoros
 http://www.wikidata.org/entity/Q1398,Virgil,Virgil
 http://www.wikidata.org/entity/Q189597,Philo of Alexandria,Philo Allegor.
@@ -55,12 +73,16 @@ http://www.wikidata.org/entity/Q471218,Callippus of Cyzicus,Calippus
 http://www.wikidata.org/entity/Q2142007,William Crabtree,Mr. Crabtrie
 http://www.wikidata.org/entity/Q76684,Simon Marius,Simon Marius
 http://www.wikidata.org/entity/Q76120944,Richard Towneley,Townley
+http://www.wikidata.org/entity/Q76120944,Richard Towneley,Townly
 http://www.wikidata.org/entity/Q160187,Ole Rømer,Mr. Romer
 http://www.wikidata.org/entity/Q196472,Giovanni Battista Riccioli,Ricciolus
 http://www.wikidata.org/entity/Q76738,Athanasius Kircher,Kircher
+http://www.wikidata.org/entity/Q354631,Jeremiah Horrocks,Horrox
+http://www.wikidata.org/entity/Q354631,Jeremiah Horrocks,Mr. Horrox
 http://www.wikidata.org/entity/Q211783,Pappus of Alexandria,Pappus
 http://www.wikidata.org/entity/Q211783,Pappus of Alexandria,Pappus of Alexandria
 http://www.wikidata.org/entity/Q47434,Edmond Halley,Halley
+http://www.wikidata.org/entity/Q47434,Edmond Halley,Edmund Halley
 http://www.wikidata.org/entity/Q47434,Edmond Halley,Dr. Halley
 http://www.wikidata.org/entity/Q47434,Edmond Halley,Edmundus Halleius
 http://www.wikidata.org/entity/Q47434,Edmond Halley,Halleio
@@ -109,6 +131,7 @@ http://www.wikidata.org/entity/Q8739,Archimedes,Archimed.
 http://www.wikidata.org/entity/Q8739,Archimedes,Archimedis
 http://www.wikidata.org/entity/Q244152,Willebrord Snellius,Snellius
 http://www.wikidata.org/entity/Q244152,Willebrord Snellius,Villebrordius Snellius
+http://www.wikidata.org/entity/Q9191,René Descartes,Descartes
 http://www.wikidata.org/entity/Q9191,René Descartes,Cartesius
 http://www.wikidata.org/entity/Q9191,René Descartes,Des Cartes
 http://www.wikidata.org/entity/Q9191,René Descartes,Sectateurs de Descartes
@@ -125,7 +148,6 @@ http://www.wikidata.org/entity/Q1356811,Joseph Sauveur,M. Sauveur
 http://www.wikidata.org/entity/Q619,Nicolaus Copernicus,Copernicus
 http://www.wikidata.org/entity/Q619,Nicolaus Copernicus,Copernican hypothesis
 http://www.wikidata.org/entity/Q311814,Giovanni Alfonso Borelli,Borelli
-http://www.wikidata.org/entity/Q76120944,Richard Towneley,Townly
 http://www.wikidata.org/entity/Q14279,Giovanni Domenico Cassini,Cassini
 http://www.wikidata.org/entity/Q4375031,James Pound,Mr. Pound
 http://www.wikidata.org/entity/Q8963,Johannes Kepler,Kepler
@@ -136,6 +158,7 @@ http://www.wikidata.org/entity/Q735426,Godfried Wendelen,Vendelin
 http://www.wikidata.org/entity/Q521638,Thomas Street,Street
 http://www.wikidata.org/entity/Q36620,Tycho Brahe,Tycho Brahe
 http://www.wikidata.org/entity/Q36620,Tycho Brahe,Tycho
+http://www.wikidata.org/entity/Q36620,Tycho Brahe,Tychonic
 http://www.wikidata.org/entity/Q362753,Nicholas Mercator,Mr. N. Mercator
 http://www.wikidata.org/entity/Q7328100,Richard Norwood,Mr. Norwood
 http://www.wikidata.org/entity/Q314854,Jean Picard,M. Picart
@@ -156,5 +179,3 @@ http://www.wikidata.org/entity/Q57963,Johannes Hevelius,Hevelius
 http://www.wikidata.org/entity/Q123842,Johann Baptist Cysat,Cysatus
 http://www.wikidata.org/entity/Q78427,Johann Bayer,Bayer
 http://www.wikidata.org/entity/Q62317,Gottfried Kirch,Mr. Gottfried Kirch
-http://www.wikidata.org/entity/Q1048,Julius Caesar,Julius Cæsar
-http://www.wikidata.org/entity/Q138341287,Ponthæus,O. S. Ponthæus

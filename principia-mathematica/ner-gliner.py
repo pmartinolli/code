@@ -82,3 +82,4 @@ with open(output_file, mode='w', encoding='utf-8', newline='') as f:
 
 print(f"Fichier CSV généré avec succès : {output_file}")
 
+

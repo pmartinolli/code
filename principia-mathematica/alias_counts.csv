@@ -1,7 +1,4 @@
 QID + Label,Alias,Count
-Q354631 – Jeremiah Horrocks,Horrox,2
-Q354631 – Jeremiah Horrocks,Mr. Horrox,1
-Q354631 – Jeremiah Horrocks,Total,3
 Q56202338 – Ancient Egyptians,Egyptians,4
 Q56202338 – Ancient Egyptians,Total,4
 Q1651392 – Romans,Romans,1
@@ -12,6 +9,39 @@ Q9047 – Gottfried Wilhelm Leibniz,Total,0
 Q3112766 – Isaac Vossius,Ifaaco Voffio,0
 Q3112766 – Isaac Vossius,Isaaco Vossio,0
 Q3112766 – Isaac Vossius,Total,0
+"Q461340 – Paris Observatory, PSL University",Royal Observatory of Paris,3
+"Q461340 – Paris Observatory, PSL University",Royal Observatory at Paris,1
+"Q461340 – Paris Observatory, PSL University",Total,4
+Q192988 – Royal Observatory,Royal Observatory at Greenwich,1
+Q192988 – Royal Observatory,Royal Observatory of Greenwich,1
+Q192988 – Royal Observatory,Total,2
+Q25688688 – ancient Greeks,Greeks,2
+Q25688688 – ancient Greeks,Total,2
+Q178710 – Vesta,Vesta,1
+Q178710 – Vesta,Total,1
+Q2983591 – collège Henri-IV de La Flèche,University of La Fleche,1
+Q2983591 – collège Henri-IV de La Flèche,Total,1
+Q332342 – Trinity College,Trinity College,1
+Q332342 – Trinity College,Total,1
+Q3746490 – Flavius Lampadius,Lampadius,1
+Q3746490 – Flavius Lampadius,Total,1
+Q41866 – Justinian I,Justin,1
+Q41866 – Justinian I,Total,1
+Q3435583 – Robert Kirk,Mr. Kirk,1
+Q3435583 – Robert Kirk,Total,1
+Q43393 – Robert Boyle,Mr. Boyle,1
+Q43393 – Robert Boyle,Total,1
+Q3242107 – Chaldeans,Chaldeans,1
+Q3242107 – Chaldeans,Total,1
+Q721703 – Rufius Gennadius Probus Orestes,Orestes,1
+Q721703 – Rufius Gennadius Probus Orestes,Total,1
+Q76365 – Regiomontanus,Regiomontanus,1
+Q76365 – Regiomontanus,Total,1
+Q1048 – Julius Caesar,Julius Cæsar,1
+Q1048 – Julius Caesar,Total,1
+Q138341287 – Ponthæus,Ponthæus,9
+Q138341287 – Ponthæus,O. S. Ponthæus,1
+Q138341287 – Ponthæus,Total,10
 Q111281478 – Johann Alexander Cellius,Cellius,7
 Q111281478 – Johann Alexander Cellius,Total,7
 Q46822655 – Franciscus Galletius,Galletius,6
@@ -30,7 +60,8 @@ Q138341375 – Valentinus Estancius,Total,2
 Q940417 – Symeon of Durham,"Simeon, the monk of Durham",2
 Q940417 – Symeon of Durham,Total,2
 Q369366 – Matthew Paris,Matthew Paris,2
-Q369366 – Matthew Paris,Total,2
+Q369366 – Matthew Paris,Matth. Paris,1
+Q369366 – Matthew Paris,Total,3
 Q868 – Aristotle,Aristotle,6
 Q868 – Aristotle,Total,6
 Q376856 – Adrien Auzout,M. Auzout,7
@@ -62,8 +93,9 @@ Q1541 – Cicero,Cicer.,0
 Q1541 – Cicero,Total,0
 Q36303 – Thales,Thales,1
 Q36303 – Thales,Total,1
+Q83041 – Anaxagoras,Anaxagoras,1
 Q83041 – Anaxagoras,Anaxagoros,1
-Q83041 – Anaxagoras,Total,1
+Q83041 – Anaxagoras,Total,2
 Q1398 – Virgil,Virgil,1
 Q1398 – Virgil,Total,1
 Q189597 – Philo of Alexandria,Philo Allegor.,0
@@ -113,11 +145,15 @@ Q196472 – Giovanni Battista Riccioli,Ricciolus,3
 Q196472 – Giovanni Battista Riccioli,Total,3
 Q76738 – Athanasius Kircher,Kircher,1
 Q76738 – Athanasius Kircher,Total,1
+Q354631 – Jeremiah Horrocks,Horrox,2
+Q354631 – Jeremiah Horrocks,Mr. Horrox,1
+Q354631 – Jeremiah Horrocks,Total,3
 Q211783 – Pappus of Alexandria,Pappus,2
 Q211783 – Pappus of Alexandria,Pappus of Alexandria,0
 Q211783 – Pappus of Alexandria,Total,2
 Q47434 – Edmond Halley,Dr. Halley,23
-Q47434 – Edmond Halley,Halley,1
+Q47434 – Edmond Halley,Edmund Halley,1
+Q47434 – Edmond Halley,Halley,0
 Q47434 – Edmond Halley,Edmundus Halleius,0
 Q47434 – Edmond Halley,Halleio,0
 Q47434 – Edmond Halley,EDM. Halley,0
@@ -179,9 +215,10 @@ Q244152 – Willebrord Snellius,Villebrordius Snellius,0
 Q244152 – Willebrord Snellius,Total,1
 Q9191 – René Descartes,Cartesius,5
 Q9191 – René Descartes,Des Cartes,3
+Q9191 – René Descartes,Descartes,1
 Q9191 – René Descartes,Sectateurs de Descartes,0
 Q9191 – René Descartes,Cartesiani,0
-Q9191 – René Descartes,Total,8
+Q9191 – René Descartes,Total,9
 Q1342809 – Giovanni Francesco Grimaldi,Grimaldus,1
 Q1342809 – Giovanni Francesco Grimaldi,Total,1
 Q1279339 – John Collins,Mr. J. Collins,1
@@ -219,7 +256,8 @@ Q521638 – Thomas Street,Street,1
 Q521638 – Thomas Street,Total,1
 Q36620 – Tycho Brahe,Tycho,9
 Q36620 – Tycho Brahe,Tycho Brahe,1
-Q36620 – Tycho Brahe,Total,10
+Q36620 – Tycho Brahe,Tychonic,1
+Q36620 – Tycho Brahe,Total,11
 Q362753 – Nicholas Mercator,Mr. N. Mercator,1
 Q362753 – Nicholas Mercator,Total,1
 Q7328100 – Richard Norwood,Mr. Norwood,1
@@ -258,7 +296,3 @@ Q78427 – Johann Bayer,Bayer,7
 Q78427 – Johann Bayer,Total,7
 Q62317 – Gottfried Kirch,Mr. Gottfried Kirch,1
 Q62317 – Gottfried Kirch,Total,1
-Q1048 – Julius Caesar,Julius Cæsar,1
-Q1048 – Julius Caesar,Total,1
-Q138341287 – Ponthæus,O. S. Ponthæus,1
-Q138341287 – Ponthæus,Total,1
