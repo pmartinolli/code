@@ -1315,7 +1315,7 @@ document.getElementById('clear-search').addEventListener('click', () => {
     xhr.open('GET', 'academicTTRPG.rdf', true);
     xhr.onload = function() {
       if (xhr.status === 200 || (xhr.status === 0 && xhr.responseText)) {
-        document.getElementById('file-label').textContent = 'zotero.rdf';
+        document.getElementById('file-label').textContent = 'academicTTRPG.rdf';
         loadData(parseRDF(xhr.responseText));
       }
     };
