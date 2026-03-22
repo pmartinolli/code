@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<!--
+Vibe coded by Pascaliensis with Claude Sonnet 4.6, 20260320
+Provide an Export of Zotero data as RDF 
+Only the collections that are labelled as a number followed by a dot like "1. label" or "45. stuff" are displayed
+Only the tags that starts by "_" and "=" are displayed 
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zotero Library Viewer</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --surface: #181818;
+    --surface2: #222222;
+    --surface3: #2a2a2a;
+    --border: #333;
+    --accent: #c8a96e;
+    --accent2: #7eb8c8;
+    --text: #e8e4dc;
+    --text-muted: #888;
+    --text-dim: #555;
+    --tag-bg: #1e2a30;
+    --tag-active: #7eb8c8;
+    --col-bg: #1e1e1e;
+    --col-active: #c8a96e;
+    --danger: #c86e6e;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+    --serif: 'Playfair Display', serif;
+    --radius: 4px;
+    --sidebar-w: 220px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: var(--serif);
+    font-size: 20px;
+    color: var(--accent);
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+  }
+
+  .logo span {
+    color: var(--text-muted);
+    font-size: 12px;
+    font-family: var(--mono);
+    display: block;
+    line-height: 1;
+    letter-spacing: 0.08em;
+  }
+
+  .header-sep { width: 1px; height: 36px; background: var(--border); }
+
+  .upload-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: var(--radius);
+    font-family: var(--mono);
+    font-size: 12px;
+    cursor: pointer;
+    border: none;
+    transition: all .15s;
+    white-space: nowrap;
+  }
+
+  .btn-accent {
+    background: var(--accent);
+    color: #111;
+    font-weight: 500;
+  }
+  .btn-accent:hover { background: #d4b87a; }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { border-color: var(--text-muted); color: var(--text); }
+
+  #file-input { display: none; }
+
+  .file-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+  }
+
+  .stats-bar {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    display: flex;
+    gap: 16px;
+  }
+  .stats-bar b { color: var(--accent); font-weight: 500; }
+
+  /* ── Layout ── */
+  .layout {
+    display: grid;
+    grid-template-columns: var(--sidebar-w) 1fr var(--sidebar-w);
+    min-height: calc(100vh - 64px);
+  }
+
+  /* ── Sidebars ── */
+  .sidebar {
+    background: var(--col-bg);
+    border-right: 1px solid var(--border);
+    padding: 0;
+    overflow-y: auto;
+    position: sticky;
+    top: 64px;
+    height: calc(100vh - 64px);
+  }
+  .sidebar.right { border-right: none; border-left: 1px solid var(--border); }
+
+  .sidebar-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 14px 16px 8px;
+    position: sticky;
+    top: 0;
+    background: var(--col-bg);
+    border-bottom: 1px solid var(--border);
+    z-index: 1;
+  }
+
+  .sidebar-list { padding: 8px 0; }
+
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 16px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background .1s, color .1s;
+    border-left: 2px solid transparent;
+  }
+  .sidebar-item:hover { background: var(--surface3); }
+  .sidebar-item.active {
+    background: rgba(200,169,110,.08);
+    border-left-color: var(--col-active);
+    color: var(--col-active);
+  }
+
+  .sidebar.right .sidebar-item.active {
+    background: rgba(126,184,200,.08);
+    border-left-color: var(--tag-active);
+    color: var(--tag-active);
+  }
+
+  .sidebar-item .count {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    background: var(--surface2);
+    padding: 1px 5px;
+    border-radius: 10px;
+  }
+
+  .sidebar-item .icon { opacity: .5; font-size: 12px; }
+
+  /* nested collection */
+  .col-child { padding-left: 28px; }
+  .col-child .icon { opacity:.3; }
+
+  /* ── Main ── */
+  main {
+    padding: 0 24px 40px;
+    background: var(--bg);
+  }
+
+  .search-bar {
+    position: sticky;
+    top: 64px;
+    z-index: 50;
+    background: var(--bg);
+    padding: 16px 0 12px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0;
+  }
+
+  .search-wrap {
+    position: relative;
+  }
+
+  .search-wrap input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 9px 36px 9px 38px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .search-wrap input:focus { border-color: var(--accent2); }
+  .search-wrap input::placeholder { color: var(--text-dim); }
+
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-dim);
+    font-size: 14px;
+    pointer-events: none;
+  }
+
+  .clear-search {
+    position: absolute;
+    right: 10px;
+    top: 50%; transform: translateY(-50%);
+    background: none; border: none;
+    color: var(--text-dim); cursor: pointer;
+    font-size: 16px; line-height: 1;
+    display: none;
+    padding: 2px;
+  }
+  .clear-search:hover { color: var(--text); }
+
+  /* ── Active filters bar ── */
+  .filters-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 10px 0 2px;
+    min-height: 0;
+  }
+
+  .filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2px 10px 2px 10px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .filter-chip.col { border-color: var(--col-active); color: var(--col-active); }
+  .filter-chip.tag { border-color: var(--tag-active); color: var(--tag-active); }
+  .filter-chip button {
+    background: none; border: none; cursor: pointer;
+    color: inherit; opacity: .6; font-size: 13px; line-height: 1;
+    padding: 0; margin-left: 2px;
+  }
+  .filter-chip button:hover { opacity: 1; }
+
+  /* ── Ref list ── */
+  .ref-list { margin-top: 8px; }
+
+  .ref-item {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 6px;
+    background: var(--surface);
+    transition: border-color .15s, background .15s;
+    overflow: hidden;
+  }
+  .ref-item:hover { border-color: #444; background: var(--surface2); }
+
+  .ref-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .ref-type {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 3px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .type-journalArticle { background: rgba(200,169,110,.15); color: var(--accent); }
+  .type-book           { background: rgba(126,184,200,.15); color: var(--accent2); }
+  .type-bookSection    { background: rgba(126,200,150,.15); color: #7ec896; }
+  .type-conferencePaper{ background: rgba(200,126,150,.15); color: #c87e96; }
+  .type-thesis         { background: rgba(180,126,200,.15); color: #b47ec8; }
+  .type-report         { background: rgba(200,180,126,.15); color: #c8b47e; }
+  .type-webpage        { background: rgba(126,160,200,.15); color: #7ea0c8; }
+  .type-document       { background: rgba(160,160,160,.12); color: #a0a0a0; }
+  .type-manuscript     { background: rgba(200,160,126,.15); color: #c8a07e; }
+  .type-patent         { background: rgba(160,200,126,.15); color: #a0c87e; }
+  .type-film           { background: rgba(200,126,126,.15); color: #c87e7e; }
+  .type-presentation   { background: rgba(126,200,200,.15); color: #7ec8c8; }
+  .type-blogPost       { background: rgba(180,200,126,.15); color: #b4c87e; }
+  .type-podcast        { background: rgba(200,140,200,.15); color: #c88cc8; }
+  .type-broadcast      { background: rgba(140,180,200,.15); color: #8cb4c8; }
+  .type-recording      { background: rgba(200,126,180,.15); color: #c87eb4; }
+  .type-artwork        { background: rgba(220,170,100,.15); color: #dcaa64; }
+  .type-map            { background: rgba(100,200,160,.15); color: #64c8a0; }
+  .type-software       { background: rgba(100,160,220,.15); color: #64a0dc; }
+  .type-dataset        { background: rgba(160,220,180,.15); color: #a0dcb4; }
+  .type-encyclopedia   { background: rgba(220,200,100,.15); color: #dcc864; }
+  .type-interview      { background: rgba(200,180,220,.15); color: #c8b4dc; }
+  .type-letter         { background: rgba(180,200,180,.15); color: #b4c8b4; }
+  .type-magazineArticle{ background: rgba(220,140,100,.15); color: #dc8c64; }
+  .type-newspaperArticle{background: rgba(180,160,140,.15); color: #b4a08c; }
+  .type-note           { background: rgba(160,160,120,.15); color: #a0a078; }
+  .type-preprint       { background: rgba(140,200,220,.15); color: #8cc8dc; }
+  .type-standard       { background: rgba(160,180,200,.15); color: #a0b4c8; }
+  .type-legal          { background: rgba(200,160,160,.15); color: #c8a0a0; }
+  .type-default        { background: var(--surface3); color: var(--text-muted); }
+
+  .ref-title {
+    flex: 1;
+    font-size: 13.5px;
+    font-weight: 400;
+    line-height: 1.4;
+    color: var(--text);
+  }
+  .ref-title em { background: rgba(200,169,110,.25); color: var(--accent); font-style: normal; }
+
+  .ref-date {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .ref-toggle {
+    color: var(--text-dim);
+    font-size: 12px;
+    flex-shrink: 0;
+    transition: transform .2s;
+  }
+  .ref-item.open .ref-toggle { transform: rotate(180deg); }
+
+  .ref-link {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    text-decoration: none;
+    white-space: nowrap;
+    flex-shrink: 0;
+    background: rgba(200,169,110,.12);
+    color: var(--accent);
+    border: 1px solid rgba(200,169,110,.25);
+    transition: background .15s;
+  }
+  .ref-link:hover { background: rgba(200,169,110,.25); }
+  .ref-link-url {
+    background: rgba(126,184,200,.12);
+    color: var(--accent2);
+    border-color: rgba(126,184,200,.25);
+  }
+  .ref-link-url:hover { background: rgba(126,184,200,.25); }
+
+  /* ── Collapsible details ── */
+  .ref-details {
+    display: none;
+    padding: 0 14px 14px;
+    border-top: 1px solid var(--border);
+    margin-top: 0;
+  }
+  .ref-item.open .ref-details { display: block; }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: 3px 12px;
+    margin-top: 12px;
+    font-size: 13px;
+  }
+
+  .detail-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding-top: 2px;
+    align-self: start;
+  }
+
+  .detail-value {
+    color: var(--text);
+    line-height: 1.5;
+    word-break: break-word;
+  }
+  .detail-value a { color: var(--accent2); text-decoration: none; }
+  .detail-value a:hover { text-decoration: underline; }
+
+  .detail-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 1px;
+  }
+  .detail-tag {
+    background: var(--tag-bg);
+    color: var(--accent2);
+    border: 1px solid rgba(126,184,200,.2);
+    border-radius: 3px;
+    padding: 1px 7px;
+    font-size: 11px;
+    font-family: var(--mono);
+  }
+
+  .detail-abstract {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    font-style: italic;
+  }
+
+  /* ── Pagination ── */
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 20px 0 0;
+  }
+
+  .page-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 5px 10px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    min-width: 32px;
+    text-align: center;
+    transition: all .1s;
+  }
+  .page-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .page-btn.active { background: var(--accent); border-color: var(--accent); color: #111; font-weight: 600; }
+  .page-btn:disabled { opacity: .3; cursor: default; }
+  .page-ellipsis { color: var(--text-dim); font-family: var(--mono); font-size: 12px; padding: 0 4px; }
+
+  /* ── Empty / loading states ── */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-dim);
+  }
+  .empty-state .big-icon { font-size: 48px; margin-bottom: 16px; opacity: .3; }
+  .empty-state p { font-family: var(--mono); font-size: 13px; }
+  .empty-state .hint { font-size: 11px; margin-top: 8px; opacity: .6; }
+
+  .drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: 8px;
+    padding: 60px 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+    margin: 32px 0;
+  }
+  .drop-zone:hover, .drop-zone.dragover {
+    border-color: var(--accent);
+    background: rgba(200,169,110,.04);
+  }
+  .drop-zone .big-icon { font-size: 48px; margin-bottom: 16px; }
+  .drop-zone h2 { font-family: var(--serif); font-size: 22px; color: var(--accent); margin-bottom: 8px; }
+  .drop-zone p { color: var(--text-muted); font-size: 13px; }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #444; }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    :root { --sidebar-w: 180px; }
+  }
+  @media (max-width: 700px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { position: static; height: auto; max-height: 200px; }
+    .sidebar.right { border-left: none; border-top: 1px solid var(--border); }
+    .stats-bar { display: none; }
+  }
+
+  .result-count {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    padding: 8px 0 4px;
+  }
+  .result-count b { color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    Zotero Viewer
+    <span>RDF Library Browser</span>
+  </div>
+  <div class="header-sep"></div>
+  <div class="upload-area">
+    <input type="file" id="file-input" accept=".rdf,.xml">
+    <label for="file-input" class="btn btn-accent">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Load RDF File
+    </label>
+    <span class="file-label" id="file-label">No file loaded</span>
+  </div>
+  <div class="stats-bar" id="stats-bar" style="display:none">
+    <span><b id="stat-refs">0</b> references</span>
+    <span><b id="stat-cols">0</b> collections</span>
+    <span><b id="stat-tags">0</b> tags</span>
+  </div>
+</header>
+
+<div class="layout">
+  <!-- Collections sidebar -->
+  <aside class="sidebar" id="sidebar-collections">
+    <div class="sidebar-title">Collections</div>
+    <div class="sidebar-list" id="col-list">
+      <div class="empty-state" style="padding:20px 16px">
+        <p style="font-size:11px">Load an RDF file<br>to see collections</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main>
+    <div id="welcome">
+      <label for="file-input">
+        <div class="drop-zone" id="drop-zone">
+          <div class="big-icon">📚</div>
+          <h2>Drop your Zotero RDF here</h2>
+          <p>or click to browse — supports Zotero RDF exports (.rdf)</p>
+        </div>
+      </label>
+    </div>
+
+    <div id="app" style="display:none">
+      <div class="search-bar">
+        <div class="search-wrap">
+          <span class="search-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          </span>
+          <input type="text" id="search-input" placeholder="Search all fields…" autocomplete="off">
+          <button class="clear-search" id="clear-search" title="Clear search">×</button>
+        </div>
+        <div class="filters-bar" id="filters-bar"></div>
+      </div>
+      <div class="result-count" id="result-count"></div>
+      <div class="ref-list" id="ref-list"></div>
+      <div class="pagination" id="pagination"></div>
+    </div>
+  </main>
+
+  <!-- Tags sidebar -->
+  <aside class="sidebar right" id="sidebar-tags">
+    <div class="sidebar-title">Tags</div>
+    <div class="sidebar-list" id="tag-list">
+      <div class="empty-state" style="padding:20px 16px">
+        <p style="font-size:11px">Load an RDF file<br>to see tags</p>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+let allRefs = [];
+let collections = [];   // [{id, name, parentId, refIds:[]}]
+let allTags = [];
+
+let activeCollections = new Set(); // collection ids
+let activeTags = new Set();
+let activeTypes = new Set();                            
+let searchQuery = '';
+let currentPage = 1;
+const PAGE_SIZE = 50;
+
+// ── RDF Parsing ────────────────────────────────────────────────────────────
+function parseRDF(xmlStr) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(xmlStr, 'application/xml');
+
+  const ns = {
+    rdf:     'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+    z:       'http://www.zotero.org/namespaces/export#',
+    dc:      'http://purl.org/dc/elements/1.1/',
+    dcterms: 'http://purl.org/dc/terms/',
+    bib:     'http://purl.org/net/biblio#',
+    foaf:    'http://xmlns.com/foaf/0.1/',
+    link:    'http://purl.org/rss/1.0/modules/link/',
+    prism:   'http://prismstandard.org/namespaces/1.2/basic/',
+    rdfs:    'http://www.w3.org/2000/01/rdf-schema#',
+  };
+
+  // Get direct-child element by namespace+local (avoids picking up nested dc:title etc.)
+  function directChild(el, nsUri, local) {
+    for (const child of el.children) {
+      if (child.namespaceURI === nsUri && child.localName === local) return child;
+    }
+    return null;
+  }
+  function directChildText(el, nsUri, local) {
+    return directChild(el, nsUri, local)?.textContent.trim() || '';
+  }
+  // Deep search (fine for fields that don't risk collision)
+  function deep(el, nsUri, local) {
+    return el.getElementsByTagNameNS(nsUri, local)[0]?.textContent.trim() || '';
+  }
+
+  // ── Collections ──
+  const colMap = {};
+  Array.from(doc.getElementsByTagNameNS(ns.z, 'Collection')).forEach(el => {
+    const id = el.getAttributeNS(ns.rdf, 'about') || el.getAttribute('rdf:about') || '';
+    const name = directChildText(el, ns.dc, 'title') ||
+                 directChildText(el, ns.rdfs, 'label') || 'Untitled';
+    const parentEl = directChild(el, ns.dcterms, 'isPartOf');
+    const parentId = parentEl?.getAttributeNS(ns.rdf, 'resource') ||
+                     parentEl?.getAttribute('rdf:resource') || null;
+    colMap[id] = { id, name, parentId, refIds: [] };
+  });
+
+  // ── Item elements ──
+  const rdfDescriptions = Array.from(doc.getElementsByTagNameNS(ns.rdf, 'Description'))
+    .filter(el => el.getElementsByTagNameNS(ns.z, 'itemType').length > 0);
+
+  const itemEls = [
+    ...Array.from(doc.getElementsByTagNameNS(ns.bib, 'Article')),
+    ...Array.from(doc.getElementsByTagNameNS(ns.bib, 'Book')),
+    ...Array.from(doc.getElementsByTagNameNS(ns.bib, 'BookSection')),
+    ...Array.from(doc.getElementsByTagNameNS(ns.bib, 'ConferencePaper')),
+    ...Array.from(doc.getElementsByTagNameNS(ns.bib, 'Thesis')),
+    ...Array.from(doc.getElementsByTagNameNS(ns.bib, 'Document')),
+    ...Array.from(doc.getElementsByTagNameNS(ns.bib, 'Manuscript')),
+    ...Array.from(doc.getElementsByTagNameNS(ns.bib, 'Patent')),
+    ...Array.from(doc.getElementsByTagNameNS(ns.bib, 'Report')),
+    ...Array.from(doc.getElementsByTagNameNS(ns.bib, 'Webpage')),
+    ...rdfDescriptions,
+  ];
+
+  // Deduplicate by rdf:about
+  const seen = new Set();
+  const uniqueItems = [];
+  for (const el of itemEls) {
+    const about = el.getAttributeNS(ns.rdf, 'about') || el.getAttribute('rdf:about') || '';
+    if (!seen.has(about)) { seen.add(about); uniqueItems.push(el); }
+  }
+
+  const typeMap = {
+    JournalArticle: 'journalArticle', 
+    Article: 'journalArticle',
+    Book: 'book', 
+    BookSection: 'bookSection',
+    ConferencePaper: 'conferencePaper', 
+    Thesis: 'thesis',
+    Report: 'report', 
+    Webpage: 'webpage', 
+    Document: 'document',
+    Manuscript: 'manuscript', 
+    Patent: 'patent', 
+    Film: 'film',
+    Presentation: 'presentation',
+  };
+
+  const refs = uniqueItems.map((el, idx) => {
+    const id = el.getAttributeNS(ns.rdf, 'about') || el.getAttribute('rdf:about') || `item-${idx}`;
+    const itemTypeEl = el.getElementsByTagNameNS(ns.z, 'itemType')[0];
+    const itemType = itemTypeEl?.textContent.trim() || typeMap[el.localName] || el.localName.toLowerCase();
+
+    // ── Title: direct dc:title child only ──
+    const title = directChildText(el, ns.dc, 'title') || '(Untitled)';
+
+    // Date
+    const date = directChildText(el, ns.dc, 'date') ||
+                 directChildText(el, ns.dcterms, 'date') || '';
+
+    // Authors via foaf:Person inside bib:authors sequence
+    const authors = [];
+    Array.from(el.getElementsByTagNameNS(ns.foaf, 'Person')).forEach(p => {
+      const surname = p.getElementsByTagNameNS(ns.foaf, 'surname')[0]?.textContent.trim() || '';
+      const first   = p.getElementsByTagNameNS(ns.foaf, 'givenName')[0]?.textContent.trim() ||
+                      p.getElementsByTagNameNS(ns.foaf, 'name')[0]?.textContent.trim() || '';
+      if (surname || first) authors.push(surname ? `${surname}, ${first}` : first);
+    });
+    if (!authors.length) {
+      Array.from(el.getElementsByTagNameNS(ns.dc, 'creator')).forEach(c => {
+        if (c.textContent.trim()) authors.push(c.textContent.trim());
+      });
+    }
+
+    const journal    = deep(el, ns.dc, 'title') || deep(el, ns.z, 'Website');
+    const volume     = deep(el, ns.prism, 'volume')  || deep(el, ns.bib, 'volume')  || deep(el, ns.z, 'volume');
+    const issue      = deep(el, ns.prism, 'number')  || deep(el, ns.z, 'issue')     || deep(el, ns.bib, 'issue');
+    const pages      = deep(el, ns.bib,   'pages')   || deep(el, ns.z, 'pages');
+    const publisher  = deep(el, ns.z, 'publisher')   || deep(el, ns.dcterms, 'publisher') || deep(el, ns.dc, 'publisher');
+    const place      = deep(el, ns.z, 'place')       || deep(el, ns.prism, 'place');
+    const isbn       = deep(el, ns.bib, 'isbn')      || deep(el, ns.z, 'ISBN');
+    const issn       = deep(el, ns.prism, 'issn')    || deep(el, ns.z, 'ISSN');
+    const doi        = deep(el, ns.prism, 'doi')     || deep(el, ns.z, 'DOI');
+    const url = deep(el, ns.z, 'url') ||
+                el.getElementsByTagNameNS(ns.link, 'link')[0]?.getAttributeNS(ns.rdf, 'resource') ||
+                el.getElementsByTagNameNS(ns.rdf, 'value')[0]?.textContent.trim() || '';
+    const abstract   = deep(el, ns.dcterms, 'abstract');
+    const language   = deep(el, ns.dc, 'language')  || deep(el, ns.z, 'language');
+    const edition    = deep(el, ns.z, 'edition');
+    const university = deep(el, ns.z, 'university');
+    const numPages   = deep(el, ns.z, 'numPages');
+    const series     = deep(el, ns.bib, 'title')      || deep(el, ns.bib, 'series');
+    const bookTitle  = deep(el, ns.bib, 'title');
+    const callNumber = deep(el, ns.z, 'callNumber');
+    const rights     = deep(el, ns.dc, 'rights');
+    const extra      = deep(el, ns.z, 'extra');
+
+    // Tags
+    const tags = Array.from(el.getElementsByTagNameNS(ns.z, 'tag'))
+      .map(t => t.textContent.trim()).filter(Boolean);
+    Array.from(el.getElementsByTagNameNS(ns.dc, 'subject')).forEach(s => {
+      const v = s.textContent.trim(); if (v && !tags.includes(v)) tags.push(v);
+    });
+
+    return {
+      id, itemType, title, date, authors, journal, volume, issue, pages,
+      publisher, place, isbn, issn, doi, url, abstract, language,
+      edition, university, numPages, series, bookTitle, callNumber,
+      rights, extra, tags,
+    };
+  });
+
+  // ── Map refs to collections ──
+  Array.from(doc.getElementsByTagNameNS(ns.z, 'Collection')).forEach(colEl => {
+    const id = colEl.getAttributeNS(ns.rdf, 'about') || colEl.getAttribute('rdf:about') || '';
+    if (!colMap[id]) return;
+    Array.from(colEl.getElementsByTagNameNS(ns.dcterms, 'hasPart')).forEach(m => {
+      const refId = m.getAttributeNS(ns.rdf, 'resource') || m.getAttribute('rdf:resource') || '';
+      if (refId) colMap[id].refIds.push(refId);
+    });
+  });
+
+  const tagsSet = new Set();
+  refs.forEach(r => r.tags.forEach(t => tagsSet.add(t)));
+
+  const tagOrder = t => t.startsWith('_') && t === t.toUpperCase() ? 0 : t.startsWith('_') ? 1 : 2;
+  return { refs, collections: Object.values(colMap), tags: [...tagsSet].filter(t => t.startsWith('_') || t.startsWith('=')).sort((a, b) => tagOrder(a) - tagOrder(b) || a.localeCompare(b)) };
+}
+
+// ── UI Rendering ───────────────────────────────────────────────────────────
+function renderCollections() {
+  const list = document.getElementById('col-list');
+  if (!collections.length) {
+    list.innerHTML = '<div class="empty-state" style="padding:16px"><p style="font-size:11px">No collections found</p></div>';
+    return;
+  }
+
+  const topLevel = collections.filter(c => /^\d+\./.test(c.name) && (!c.parentId || !collections.find(x => x.id === c.parentId)));
+  const children = collections.filter(c => /^\d+\./.test(c.name) && c.parentId && collections.find(x => x.id === c.parentId));
+
+  let html = `<div class="sidebar-item ${activeCollections.size===0?'active':''}" data-col-id="__all__">
+    <span class="icon">◉</span> All References
+    <span class="count">${allRefs.length}</span>
+  </div>`;
+
+  function renderCol(col, depth=0) {
+    const active = activeCollections.has(col.id);
+    const childrenOfThis = children.filter(c => c.parentId === col.id);
+    const cls = depth > 0 ? 'col-child' : '';
+    let h = `<div class="sidebar-item ${cls} ${active?'active':''}" data-col-id="${escHtml(col.id)}">
+      <span class="icon">${depth>0?'↳':'▸'}</span>
+      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${escHtml(col.name)}</span>
+      <span class="count">${col.refIds.length}</span>
+    </div>`;
+    childrenOfThis.forEach(ch => { h += renderCol(ch, depth+1); });
+    return h;
+  }
+
+  topLevel.forEach(c => { html += renderCol(c); });
+
+  // ── Document Types section ──
+  const typeCount = {};
+  allRefs.forEach(r => { typeCount[r.itemType] = (typeCount[r.itemType]||0)+1; });
+  const types = Object.keys(typeCount).sort((a,b) => typeCount[b]-typeCount[a]);
+
+  html += `<div style="font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--text-dim);padding:14px 16px 8px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-top:8px">Document Types</div>`;
+  html += `<div class="sidebar-item ${activeTypes.size===0?'active':''}" data-type-id="__all__">
+    <span class="icon">◉</span> All Types
+    <span class="count">${allRefs.length}</span>
+  </div>`;
+  types.forEach(t => {
+    html += `<div class="sidebar-item ${activeTypes.has(t)?'active':''}" data-type-id="${escHtml(t)}">
+      <span class="ref-type ${typeClass(t)}" style="font-size:9px;padding:1px 5px;flex-shrink:0">${typeLabel(t)}</span>
+      <span style="flex:1"></span>
+      <span class="count">${typeCount[t]}</span>
+    </div>`;
+  });                                         
+  list.innerHTML = html;
+
+  list.querySelectorAll('.sidebar-item[data-col-id]').forEach(el => {
+    el.addEventListener('click', () => {
+      const id = el.dataset.colId;
+      if (id === '__all__') {
+        activeCollections.clear();
+      } else {
+        if (activeCollections.has(id)) activeCollections.delete(id);
+        else activeCollections.add(id);
+      }
+      currentPage = 1;
+      render();
+    });
+  });
+  list.querySelectorAll('[data-type-id]').forEach(el => {
+    el.addEventListener('click', () => {
+      const id = el.dataset.typeId;
+      if (id === '__all__') activeTypes.clear();
+      else if (activeTypes.has(id)) activeTypes.delete(id);
+      else activeTypes.add(id);
+      currentPage = 1;
+      render();
+    });
+  });                                                         
+}
+
+function renderTags() {
+  const list = document.getElementById('tag-list');
+  if (!allTags.length) {
+    list.innerHTML = '<div class="empty-state" style="padding:16px"><p style="font-size:11px">No tags found</p></div>';
+    return;
+  }
+
+  // Count tag occurrences
+  const tagCount = {};
+  allRefs.forEach(r => r.tags.forEach(t => { tagCount[t] = (tagCount[t]||0)+1; }));
+
+  let html = '';
+  allTags.filter(tag => tag.startsWith('_') || tag.startsWith('=')).forEach(tag => {
+    const active = activeTags.has(tag);
+    html += `<div class="sidebar-item ${active?'active':''}" data-tag="${escHtml(tag)}">
+      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-size:12px">${escHtml(tag)}</span>
+      <span class="count">${tagCount[tag]||0}</span>
+    </div>`;
+  });
+
+  list.innerHTML = html;
+  list.querySelectorAll('.sidebar-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const tag = el.dataset.tag;
+      if (activeTags.has(tag)) activeTags.delete(tag);
+      else activeTags.add(tag);
+      currentPage = 1;
+      render();
+    });
+  });
+}
+
+function getFilteredRefs() {
+  let result = allRefs;
+
+  // Collection filter (AND: ref must be in every selected collection)
+  if (activeCollections.size > 0) {
+    const colIds = [...activeCollections];
+    result = result.filter(r => colIds.every(colId => {
+      const col = collections.find(c => c.id === colId);
+      return col && col.refIds.includes(r.id);
+    }));
+  }
+
+  // Tag filter
+  if (activeTags.size > 0) {
+    result = result.filter(r => [...activeTags].every(t => r.tags.includes(t)));
+  }
+
+  // Type filter
+  if (activeTypes.size > 0) {
+    result = result.filter(r => activeTypes.has(r.itemType));
+  }                             
+  // Search
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    result = result.filter(r => {
+      return (
+        r.title.toLowerCase().includes(q) ||
+        r.authors.join(' ').toLowerCase().includes(q) ||
+        r.date.toLowerCase().includes(q) ||
+        r.journal.toLowerCase().includes(q) ||
+        r.publisher.toLowerCase().includes(q) ||
+        r.abstract.toLowerCase().includes(q) ||
+        r.tags.join(' ').toLowerCase().includes(q) ||
+        r.doi.toLowerCase().includes(q) ||
+        r.itemType.toLowerCase().includes(q) ||
+        r.series.toLowerCase().includes(q) ||
+        r.bookTitle.toLowerCase().includes(q)
+      );
+    });
+  }
+                                                       
+  return result;
+}
+
+function highlightText(text, query) {
+  if (!query) return escHtml(text);
+  const q = query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  return escHtml(text).replace(new RegExp(`(${escHtml(q)})`, 'gi'), '<em>$1</em>');
+}
+
+function typeClass(t) {
+  const map = {
+    journalArticle:      'type-journalArticle',
+    article:             'type-journalArticle',
+    book:                'type-book',
+    bookSection:         'type-bookSection',
+    conferencePaper:     'type-conferencePaper',
+    thesis:              'type-thesis',
+    report:              'type-report',
+    webpage:             'type-webpage',
+    document:            'type-document',
+    manuscript:          'type-manuscript',
+    patent:              'type-patent',
+    film:                'type-film',
+    presentation:        'type-presentation',
+    blogPost:            'type-blogPost',
+    podcast:             'type-podcast',
+    radioBroadcast:      'type-broadcast',
+    tvBroadcast:         'type-broadcast',
+    videoRecording:      'type-recording',
+    audioRecording:      'type-recording',
+    artwork:             'type-artwork',
+    map:                 'type-map',
+    computerProgram:     'type-software',
+    software:            'type-software',
+    dataset:             'type-dataset',
+    dictionaryEntry:     'type-encyclopedia',
+    encyclopediaArticle: 'type-encyclopedia',
+    forumPost:           'type-blogPost',
+    hearing:             'type-legal',
+    instantMessage:      'type-blogPost',
+    interview:           'type-interview',
+    letter:              'type-letter',
+    magazineArticle:     'type-magazineArticle',
+    newspaperArticle:    'type-newspaperArticle',
+    note:                'type-note',
+    preprint:            'type-preprint',
+    standard:            'type-standard',
+    statute:             'type-legal',
+    bill:                'type-legal',
+    case:                'type-legal',
+  };
+  return map[t] || 'type-default';
+}
+
+function typeLabel(t) {
+  const map = {
+    journalArticle:      'Article',
+    article:             'Article',
+    book:                'Book',
+    bookSection:         'Book Section',
+    conferencePaper:     'Conference',
+    thesis:              'Thesis',
+    report:              'Report',
+    webpage:             'Webpage',
+    document:            'Document',
+    manuscript:          'Manuscript',
+    patent:              'Patent',
+    film:                'Film',
+    presentation:        'Presentation',
+    blogPost:            'Blog Post',
+    podcast:             'Podcast',
+    radioBroadcast:      'Radio',
+    tvBroadcast:         'TV',
+    videoRecording:      'Video',
+    audioRecording:      'Audio',
+    artwork:             'Artwork',
+    map:                 'Map',
+    computerProgram:     'Software',
+    software:            'Software',
+    dataset:             'Dataset',
+    dictionaryEntry:     'Dictionary',
+    encyclopediaArticle: 'Encyclopedia',
+    forumPost:           'Forum Post',
+    hearing:             'Hearing',
+    instantMessage:      'Message',
+    interview:           'Interview',
+    letter:              'Letter',
+    magazineArticle:     'Magazine',
+    newspaperArticle:    'Newspaper',
+    note:                'Note',
+    preprint:            'Preprint',
+    standard:            'Standard',
+    statute:             'Statute',
+    bill:                'Bill',
+    case:                'Case',
+  };
+  return map[t] || t;
+}
+
+function renderFiltersBar() {
+  const bar = document.getElementById('filters-bar');
+  let html = '';
+  activeCollections.forEach(id => {
+    const col = collections.find(c => c.id === id);
+    if (col) html += `<span class="filter-chip col">▸ ${escHtml(col.name)}<button data-col="${escHtml(id)}">×</button></span>`;
+  });
+  activeTypes.forEach(t => {
+    html += `<span class="filter-chip" style="border-color:var(--text-dim);color:var(--text-muted)">${typeLabel(t)}<button data-type="${escHtml(t)}">×</button></span>`;
+  });                          
+  activeTags.forEach(tag => {
+    html += `<span class="filter-chip tag"># ${escHtml(tag)}<button data-tag="${escHtml(tag)}">×</button></span>`;
+  });
+  bar.innerHTML = html;
+  bar.querySelectorAll('[data-col]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      activeCollections.delete(btn.dataset.col);
+      currentPage = 1; render();
+    });
+  });
+  bar.querySelectorAll('[data-type]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      activeTypes.delete(btn.dataset.type);
+      currentPage = 1; render();
+    });
+  });                                                    
+  bar.querySelectorAll('[data-tag]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      activeTags.delete(btn.dataset.tag);
+      currentPage = 1; render();
+    });
+  });
+}
+
+function renderRefList(filtered) {
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const page = filtered.slice(start, start + PAGE_SIZE);
+  const list = document.getElementById('ref-list');
+
+  if (!page.length) {
+    list.innerHTML = `<div class="empty-state"><div class="big-icon">🔍</div><p>No references match your filters.</p><p class="hint">Try adjusting your search or filters.</p></div>`;
+    return;
+  }
+
+  list.innerHTML = page.map(r => {
+    const titleHl = highlightText(r.title, searchQuery);
+    const year = r.date ? r.date.substring(0, 4) : '–';
+    const lastNames = r.authors.slice(0, 3).map(a => a.split(',')[0].trim()).join(', ')
+                + (r.authors.length > 3 ? ' et al.' : '');                                                                                   
+
+    const doiLink = r.doi
+      ? `<a class="ref-link" href="https://doi.org/${encodeURI(r.doi)}" target="_blank" onclick="event.stopPropagation()" title="DOI: ${escHtml(r.doi)}">DOI ↗</a>`
+      : '';
+    const urlLink = r.url
+      ? `<a class="ref-link ref-link-url" href="${escHtml(r.url)}" target="_blank" onclick="event.stopPropagation()" title="${escHtml(r.url)}">URL ↗</a>`
+      : '';
+
+    const details = buildDetails(r);
+
+    return `<div class="ref-item" data-id="${escHtml(r.id)}">
+      <div class="ref-header">
+        <span class="ref-type ${typeClass(r.itemType)}">${typeLabel(r.itemType)}</span>
+        <span class="ref-title">${titleHl}</span>
+        ${doiLink}${urlLink}
+        <span class="ref-date">${escHtml(year)}</span>
+        <span class="ref-toggle">▾</span>
+      </div>
+      <div class="ref-details">${details}</div>
+    </div>`;
+  }).join('');
+
+  list.querySelectorAll('.ref-header').forEach(h => {
+    h.addEventListener('click', () => {
+      const item = h.closest('.ref-item');
+      item.classList.toggle('open');
+    });
+  });
+}
+
+function buildDetails(r) {
+  const rows = [];
+  const add = (label, value, isHtml=false) => {
+    if (value) rows.push({ label, value, isHtml });
+  };
+
+  if (r.authors.length) add('Authors', r.authors.join('; '));
+  add('Date', r.date);
+  add('Type', typeLabel(r.itemType));
+  if (r.journal && !r.bookTitle) add('Journal / Container', r.journal);
+  if (r.bookTitle) add('Book Title', r.bookTitle);
+  if (r.series)    add('Series', r.series);
+  if (r.volume)    add('Volume', r.volume);
+  if (r.issue)     add('Issue', r.issue);
+  if (r.pages)     add('Pages', r.pages);
+  if (r.edition)   add('Edition', r.edition);
+  if (r.number)    add('Number', r.number);
+  if (r.genre)     add('Genre / Type', r.genre);
+  if (r.medium)    add('Medium', r.medium);
+  if (r.eventName) add('Event', r.eventName);
+  if (r.eventPlace)add('Event Place', r.eventPlace);
+  if (r.publisher) add('Publisher', r.publisher);
+  if (r.place)     add('Place', r.place);
+  if (r.university)add('University', r.university);
+  if (r.archive)   add('Archive', r.archive);
+  if (r.archiveLoc)add('Archive Location', r.archiveLoc);
+  if (r.numPages)  add('# Pages', r.numPages);
+  if (r.language)  add('Language', r.language);
+  if (r.isbn)      add('ISBN', r.isbn);
+  if (r.issn)      add('ISSN', r.issn);
+  if (r.doi)       add('DOI', `<a href="https://doi.org/${encodeURI(r.doi)}" target="_blank">${escHtml(r.doi)}</a>`, true);
+  if (r.url)       add('URL', `<a href="${escHtml(r.url)}" target="_blank">${escHtml(r.url.length>80?r.url.slice(0,80)+'…':r.url)}</a>`, true);
+  if (r.callNumber)add('Call #', r.callNumber);
+  if (r.rights)    add('Rights', r.rights);
+  if (r.extra)     add('Note', r.extra);
+
+  let html = `<div class="detail-grid">`;
+  rows.forEach(({label, value, isHtml}) => {
+    html += `<span class="detail-label">${label}</span>
+             <span class="detail-value">${isHtml ? value : escHtml(value)}</span>`;
+  });
+  html += `</div>`;
+
+  if (r.tags.length) {
+    html += `<div class="detail-grid" style="margin-top:6px">
+      <span class="detail-label">Tags</span>
+      <span class="detail-value"><div class="detail-tags">${r.tags.map(t => `<span class="detail-tag">${escHtml(t)}</span>`).join('')}</div></span>
+    </div>`;
+  }
+
+  if (r.abstract) {
+    html += `<div class="detail-abstract">${escHtml(r.abstract)}</div>`;
+  }
+
+  return html;
+}
+
+function renderPagination(total) {
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const pg = document.getElementById('pagination');
+  if (totalPages <= 1) { pg.innerHTML = ''; return; }
+
+  let html = `<button class="page-btn" ${currentPage===1?'disabled':''} id="pg-prev">‹ Prev</button>`;
+
+  const makeBtn = (n) => `<button class="page-btn ${n===currentPage?'active':''}" data-page="${n}">${n}</button>`;
+
+  if (totalPages <= 7) {
+    for (let i=1; i<=totalPages; i++) html += makeBtn(i);
+  } else {
+    html += makeBtn(1);
+    if (currentPage > 3) html += `<span class="page-ellipsis">…</span>`;
+    for (let i=Math.max(2,currentPage-1); i<=Math.min(totalPages-1,currentPage+1); i++) html += makeBtn(i);
+    if (currentPage < totalPages - 2) html += `<span class="page-ellipsis">…</span>`;
+    html += makeBtn(totalPages);
+  }
+
+  html += `<button class="page-btn" ${currentPage===totalPages?'disabled':''} id="pg-next">Next ›</button>`;
+  pg.innerHTML = html;
+
+  pg.querySelector('#pg-prev')?.addEventListener('click', () => { currentPage--; render(); scrollToTop(); });
+  pg.querySelector('#pg-next')?.addEventListener('click', () => { currentPage++; render(); scrollToTop(); });
+  pg.querySelectorAll('[data-page]').forEach(btn => {
+    btn.addEventListener('click', () => { currentPage=+btn.dataset.page; render(); scrollToTop(); });
+  });
+}
+
+function scrollToTop() {
+  document.getElementById('app').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function render() {
+  const filtered = getFilteredRefs();
+  document.getElementById('result-count').innerHTML = `Showing <b>${filtered.length}</b> of <b>${allRefs.length}</b> references`;
+  renderFiltersBar();
+  renderCollections();
+  renderTags();
+  renderRefList(filtered);
+  renderPagination(filtered.length);
+}
+
+// ── Load ──────────────────────────────────────────────────────────────────
+function loadData(data) {
+  allRefs = data.refs;
+  collections = data.collections;
+  allTags = data.tags;
+
+  document.getElementById('stat-refs').textContent = allRefs.length;
+  document.getElementById('stat-cols').textContent = collections.length;
+  document.getElementById('stat-tags').textContent = allTags.length;
+  document.getElementById('stats-bar').style.display = 'flex';
+
+  document.getElementById('welcome').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+
+  activeCollections.clear();
+  activeTags.clear();
+  activeTypes.clear();                    
+  searchQuery = '';
+  currentPage = 1;
+  document.getElementById('search-input').value = '';
+  document.getElementById('clear-search').style.display = 'none';
+
+  render();
+}
+
+function handleFile(file) {
+  if (!file) return;
+  document.getElementById('file-label').textContent = file.name;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = parseRDF(e.target.result);
+      loadData(data);
+    } catch(err) {
+      alert('Error parsing RDF file: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ── Events ────────────────────────────────────────────────────────────────
+document.getElementById('file-input').addEventListener('change', e => {
+  handleFile(e.target.files[0]);
+});
+
+// Drag & drop
+const dropZone = document.getElementById('drop-zone');
+['dragenter','dragover'].forEach(ev => {
+  document.body.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+});
+['dragleave','drop'].forEach(ev => {
+  document.body.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.remove('dragover'); });
+});
+document.body.addEventListener('drop', e => {
+  const file = e.dataTransfer.files[0];
+  if (file) handleFile(file);
+});
+
+// Search
+let searchTimer;
+document.getElementById('search-input').addEventListener('input', e => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    searchQuery = e.target.value.trim();
+    document.getElementById('clear-search').style.display = searchQuery ? 'block' : 'none';
+    currentPage = 1;
+    render();
+  }, 220);
+});
+
+document.getElementById('clear-search').addEventListener('click', () => {
+  document.getElementById('search-input').value = '';
+  searchQuery = '';
+  document.getElementById('clear-search').style.display = 'none';
+  currentPage = 1;
+  render();
+});
+
+// ── Auto-load zotero.json ─────────────────────────────────────────────────
+(function autoLoad() {
+  try {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', 'academicTTRPG.rdf', true);
+    xhr.onload = function() {
+      if (xhr.status === 200 || (xhr.status === 0 && xhr.responseText)) {
+        document.getElementById('file-label').textContent = 'zotero.rdf';
+        loadData(parseRDF(xhr.responseText));
+      }
+    };
+    xhr.onerror = function() { /* silent fallback */ };
+    xhr.send();
+  } catch(e) { /* silent fallback */ }
+})();
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+function escHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
