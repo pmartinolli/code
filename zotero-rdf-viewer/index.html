@@ -19326,17 +19326,31 @@ function renderTags() {
   }
 
   // Count tag occurrences
+  // Use filtered references instead of allRefs
+  const filtered = getFilteredRefs();
+
+  // Count tag occurrences ONLY in filtered set
   const tagCount = {};
-  allRefs.forEach(r => r.tags.forEach(t => { tagCount[t] = (tagCount[t]||0)+1; }));
+  filtered.forEach(r => {
+    r.tags.forEach(t => {
+      if (t.startsWith('_') || t.startsWith('=')) {
+        tagCount[t] = (tagCount[t] || 0) + 1;
+      }
+    });
+  });
+
+  // Only keep tags that actually appear
+  const visibleTags = Object.keys(tagCount).sort((a, b) => tagCount[b] - tagCount[a]);
 
   let html = '';
-  allTags.filter(tag => tag.startsWith('_') || tag.startsWith('=')).forEach(tag => {
+  visibleTags.forEach(tag => {
     const active = activeTags.has(tag);
     html += `<div class="sidebar-item ${active?'active':''}" data-tag="${escHtml(tag)}">
       <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-size:12px">${escHtml(tag)}</span>
-      <span class="count">${tagCount[tag]||0}</span>
+      <span class="count">${tagCount[tag]}</span>
     </div>`;
   });
+
 
   list.innerHTML = html;
   list.querySelectorAll('.sidebar-item').forEach(el => {
