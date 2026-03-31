@@ -503,25 +503,30 @@
 
         const qids = parseQIDs(input);
         if (qids.length === 0) {
-            showError('Aucun QID valide repéré.');
+            showError('Aucun QID valide repéré. Vérifier le format d\'importation.');
             return;
         }
 
         showLoading(true);
         hideError();
         hideResults();
-
+        
         const processBtn = document.getElementById('processBtn');
         processBtn.disabled = true;
 
         try {
+            allEntities = [];
             subjectCounts.clear();
 
-            // ✅ SINGLE REQUEST (WDQS)
-            allEntities = await fetchEntities(qids);
+            const batchSize = 50;
+            for (let i = 0; i < qids.length; i += batchSize) {
+                const batch = qids.slice(i, i + batchSize);
+                const batchEntities = await fetchEntities(batch);
+                allEntities = allEntities.concat(batchEntities);
+            }
 
             if (allEntities.length === 0) {
-                showError('Pas d\'entité valide.');
+                showError('Pas d\'entité valide repérée pour les QIDs soumis.');
                 return;
             }
 
@@ -534,8 +539,8 @@
             showResults();
 
         } catch (error) {
-            console.error(error);
-            showError('Erreur lors du traitement.');
+            console.error('Erreur lors du traitement des QIDs:', error);
+            showError('Erreur lors du traitement des QIDs. Merci de relancer.');
         } finally {
             showLoading(false);
             processBtn.disabled = false;
@@ -567,71 +572,30 @@
     }
 
     async function fetchEntities(qids) {
-        const values = qids.map(q => `wd:${q}`).join(' ');
-
-        const query = `
-        SELECT ?item ?itemLabel ?website ?subject ?subjectLabel WHERE {
-          VALUES ?item { ${values} }
-
-          OPTIONAL { ?item wdt:P856 ?website. }
-          OPTIONAL { ?item wdt:P921 ?subject. }
-
-          SERVICE wikibase:label { bd:serviceParam wikibase:language "fr,en". }
-        }
-        `;
-
-        const url = "https://query.wikidata.org/sparql";
-
-        const response = await fetch(url, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/sparql-query",
-                "Accept": "application/json"
-            },
-            body: query
-        });
-
+        const qidString = qids.join('|');
+        const url = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${qidString}&format=json&origin=*&languages=en&props=labels|claims`;
+        
+        const response = await fetch(url);
         const data = await response.json();
+        
+        if (!data.entities) throw new Error('Réponse invalide de la part de l\'API de Wikidata');
 
-        return transformWDQSResults(data.results.bindings);
+        const entities = [];
+        for (const [qid, entity] of Object.entries(data.entities)) {
+            if (entity.missing) continue;
+
+            const processedEntity = {
+                qid: qid,
+                label: entity.labels?.en?.value || qid,
+                website: extractWebsite(entity.claims),
+                subjects: await extractSubjects(entity.claims)
+            };
+
+            entities.push(processedEntity);
+        }
+
+        return entities;
     }
-
-
-    function transformWDQSResults(bindings) {
-        const map = new Map();
-
-        bindings.forEach(row => {
-            const qid = row.item.value.split('/').pop();
-
-            if (!map.has(qid)) {
-                map.set(qid, {
-                    qid: qid,
-                    label: row.itemLabel?.value || '',
-                    website: row.website?.value || '',
-                    subjects: []
-                });
-            }
-
-            if (row.subject) {
-                const subjectId = row.subject.value.split('/').pop();
-                const subjectLabel = row.subjectLabel?.value || '';
-
-                const subjects = map.get(qid).subjects;
-
-                // ✅ avoid duplicates
-                if (!subjects.some(s => s.id === subjectId)) {
-                    subjects.push({
-                        id: subjectId,
-                        label: subjectLabel
-                    });
-                }
-            }
-
-        });
-
-        return Array.from(map.values());
-    }
-
 
     function extractWebsite(claims) {
         if (!claims || !claims.P856) return null;
