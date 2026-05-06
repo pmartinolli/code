@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ du programme Revues utiles à la recherche en histoire à l’UdeM</title>
+</head>
+<body>
+  <h1>Comment ça marche ?</h1>
+    <p>Un code JavaScript exécuté dans le navigateur de l'utilisateur interroge Wikidata et récupère les données des QIDs demandés. Il les présente dans un tableau avec des filtres basés sur une liste d'autorité de certains <i>Main subjects</i> (P921). Il utilise l'ISSN présent dans Wikidata pour se connecter au DOAJ (répertoire de revues en libre accès) pour récupérer des données sur des potentiels frais de publication.</p>
+    <p>Ce programme a été <i>vibe coded</i> avec Claude Opus 4.1 d'abord puis avec ChatGPT 4.x en août 2025. Une deuxième version avec le DOAJ a été aidé par Claude Sonnet 4.6 en mars 2026. Les données de Wikidata ont été améliorées pour répondre aux besoins du programme, principalement avec P921.</p>
+  <h1>Curation</h1>
+    <h3>Liste du bibliothécaire (370+)</h3>
+        <p>Le tableau des revues existait sous la forme d'un document PDF mis à jour annuellement sur le guide histoire des Bibliothèques UdeM. Il a été conçu par Marie-Ève Ménard et amélioré par Émilie Dalpé. Ce tableau a été versé dans OpenRefine et les QIDs des revues ont été alignées (complètement). Quelques contributions ont été faites pour améliorer les données des revues. Les revues ont été ajoutées à la liste de suivi (<i>Watchlist</i>) pour surveiller les contributions futures et le vandalisme.</p>
+    <h3>Liste «histoire» du ScimagoJR (960+)</h3>
+        <p>Les données ont été téléchargées depuis <a href="https://www.scimagojr.com/journalrank.php">ScimagoJR</a> > Arts & Humanities > History : Download data. Puis elles ont été versées dans OpenRefine et les QIDs des revues ont été alignés (partiellement). Des 1800+ revues, seules les revues indexés avec un sujet "history" ont été conservées pour un total de 960 environ.</p>
+    <h3>Liste «histoire» du DOAJ (680+)</h3>
+        <p>Les données ont été téléchargées depuis le <i>CSV data dump</i> du <a href="https://doaj.org/docs/public-data-dump/">DOAJ</a>. Puis elles ont été versées dans OpenRefine, seules les données <i>history</i> ont été sélectionnées dans la colonne <i>Subjects</i>. Les QIDs des revues ont été alignés (partiellement). Des 1200+ revues, seules les revues indexés avec un sujet "history" ont été conservées pour un total de 680 environ.</p>
+        <p>La référence d'indexation sujet a été ajoutée dans Wikidata (avec <i>stated in</i> et <i>object named as</i>)</p>
+    <h3>Liste «histoire» du JCR (820+)</h3>
+        <p>Les données ont été téléchargées depuis le <i>Journal Citation Reports</i> (de <i>Web of Science</i>) > Group <i>History & Archeology</i>. Puis elles ont été versées dans OpenRefine, les 9 catégories du groupe ont été sélectionnées. Les QIDs des revues ont été alignés (partiellement). Des 1400+ revues, seules les revues indexés avec un sujet "history" ont été conservées pour un total de 680 environ.</p>
+    <h3>JournalBase</h3>
+        <p>La référence d'indexation <i>main subject</i> a été ajoutée dans Wikidata (avec <i>stated in</i> et <i>reference URL</i>).</p>
+  <h1>Prochaines étapes</h1>
+    <ul>
+        <li>Améliorer les données Wikidata des revues d'histoire (sujets principaux, modèle d'affaire, libre accès, etc.).</li>
+        <li>English version.</li>
+        <li>Monter un atelier contribution pour l'amélioration des revues.</li>
+        <li>Amélioration de la réconciliation pour les listes DOAJ et ScimagoJR (actuellement environ 80%).</li>
+        <li>Facette libre-accès.</li>
+        <li>Incorporer la liste Histoire de Journalbase du CNRS (n=3081).</li>
+        <li>Écrire un billet sur le sujet.</li>
+    </ul>
+</body>
+</html>
