@@ -36,7 +36,7 @@
       background: var(--page);
       color: var(--text);
       margin: 0;
-      padding: 20px;
+      padding: 12px;
     }
     .container {
       max-width: 1400px;
@@ -46,49 +46,60 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       padding: 20px;
     }
-    h1 { color: var(--text); text-align: center; margin-bottom: 30px; }
+    h1 { color: var(--text); text-align: center; font-size: 20px; margin: 0 0 10px; }
     .controls {
       display: flex;
-      gap: 14px 20px;
-      margin-bottom: 14px;
-      align-items: end;
+      gap: 4px 10px;
+      margin-bottom: 6px;
+      align-items: center;
       flex-wrap: wrap;
+      font-size: 12px;
     }
-    .control-group { display: flex; flex-direction: column; gap: 5px; }
-    label, .group-title { font-weight: 600; color: var(--text-secondary); font-size: 14px; }
+    .controls label {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
     input[type="text"], input[type="number"], select, button {
-      padding: 8px 12px;
+      padding: 2px 5px;
       border: 1px solid var(--border);
-      border-radius: 4px;
-      font-size: 14px;
+      border-radius: 3px;
+      font-size: 12px;
       font-family: inherit;
+      height: 24px;
+      box-sizing: border-box;
     }
-    input[type="number"] { width: 80px; }
-    #startingEntity { width: 130px; }
+    #startingEntity { width: 92px; }
+    #maxDepth { width: 44px; }
+    #maxNodes { width: 58px; }
     button {
       background: #007bff;
       color: white;
       border: none;
       cursor: pointer;
       font-weight: 600;
+      padding: 2px 10px;
     }
     button:hover { background: #0056b3; }
-    .checks { display: flex; gap: 4px 14px; flex-wrap: wrap; align-items: center; min-height: 35px; }
-    .checks label { font-weight: 500; font-size: 13px; display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
+    .checks { display: inline-flex; gap: 2px 8px; flex-wrap: wrap; align-items: center; }
+    .checks label { font-weight: 500; gap: 3px; cursor: pointer; }
+    .checks input { margin: 0; }
     .checks svg { flex: none; }
-    .zoom-controls { display: flex; gap: 10px; margin-left: auto; flex-wrap: wrap; align-items: center; }
-    .zoom-btn { padding: 6px 12px; font-size: 12px; background: #6c757d; }
+    .zoom-controls { display: flex; gap: 4px; margin-left: auto; flex-wrap: wrap; align-items: center; }
+    .zoom-btn { padding: 2px 8px; background: #6c757d; }
     .zoom-btn:hover { background: #545b62; }
-    .hint { font-size: 11px; color: var(--text-muted); }
     #status {
-      margin: 10px 0;
-      font-size: 14px;
-      padding: 10px;
+      margin: 6px 0;
+      font-size: 12px;
+      padding: 4px 8px;
       border-radius: 4px;
       background: #f1f3f4;
     }
-    .stats { display: flex; gap: 6px 20px; flex-wrap: wrap; margin: 10px 0; font-size: 13px; color: var(--text-muted); }
-    .legend { display: flex; gap: 6px 18px; flex-wrap: wrap; align-items: center; margin: 8px 0 10px; font-size: 12px; color: var(--text-secondary); }
+    .stats { display: flex; gap: 2px 14px; flex-wrap: wrap; margin: 4px 0; font-size: 12px; color: var(--text-muted); }
+    .legend { display: flex; gap: 6px 18px; flex-wrap: wrap; align-items: center; margin: 4px 0 6px; font-size: 11px; color: var(--text-secondary); }
     .legend span { display: inline-flex; align-items: center; gap: 5px; }
     .legend .sep { width: 1px; height: 14px; background: var(--border); }
     .legend .node { pointer-events: none; }
@@ -150,68 +161,57 @@
     table { border-collapse: collapse; width: 100%; }
     th, td { text-align: left; padding: 5px 10px; border-bottom: 1px solid var(--grid); vertical-align: top; }
     th { position: sticky; top: 0; background: #f1f3f4; color: var(--text-secondary); }
+    .about { line-height: 1.5; max-width: 900px; }
+    .about h2 { font-size: 14px; margin: 14px 0 4px; color: var(--text-secondary); }
+    .about dl { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; }
+    .about dt { font-weight: 600; }
+    .about dd { margin: 0; }
+    .about ul { margin: 0; padding-left: 20px; }
     td.num { text-align: right; font-variant-numeric: tabular-nums; }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Scholarly Timelined Network: a Genealogy of Written Works by Backward Citations</h1>
-    <p>By default it is built on the early papers on game theory, starting by the seminal paper « Zur Theorie der Gesellschaftsspiele » by Von Neumann in 1928 (<a href="https://www.wikidata.org/wiki/Q55867220">Q55867220</a>). The network is crawled <strong>backward only</strong>, from the starting work to the works it relies on: « cites work » (P2860) and « acknowledged » (P7137) are drawn as solid lines, « inspired by » (P941) and « based on » (P144) as dotted lines. Versions, editions and translations (P629 / P747) are grouped with their generic work, and only works are kept (no people, no institutions). The JavaScript code is executed in the browser and it is querying Qlever, with data from Wikidata (Qlever has a complete graph, whereas Wikidata is divided between scholarly articles and all else since 2024). This tool is inspired by <a href="">CitationTree</a> by Nicolas Loizeau.</p>
-    <p>Author : <a href="https://pmartinolli.github.io/">Pascal Martinolli</a> («vibe coded» with the Claude Sonnet 4)</p>
-    <p>Work in progress : very large or very dense networks are capped by « Max works » (the most cited works of each generation are kept first). It is better suited to older works where citations are manually indexed, and less effective for recent works with numerous and complex citation links.</p>
 
     <div class="controls">
-      <div class="control-group">
-        <label for="startingEntity">Starting Work (QID):</label>
-        <input type="text" id="startingEntity" placeholder="e.g. Q55867220" value="Q55867220">
-      </div>
+      <label title="Wikidata identifier of the work the genealogy starts from">Start
+        <input type="text" id="startingEntity" placeholder="Q55867220" value="Q55867220"></label>
 
-      <div class="control-group">
-        <span class="group-title">Links followed backward:</span>
-        <div class="checks">
-          <label><input type="checkbox" id="prop-P2860" checked>
-            <svg width="22" height="8" aria-hidden="true"><line x1="1" y1="4" x2="21" y2="4" class="link strong"/></svg>cites work</label>
-          <label><input type="checkbox" id="prop-P7137" checked>
-            <svg width="22" height="8" aria-hidden="true"><line x1="1" y1="4" x2="21" y2="4" class="link strong"/></svg>acknowledged</label>
-          <label><input type="checkbox" id="prop-P941" checked>
-            <svg width="22" height="8" aria-hidden="true"><line x1="1" y1="4" x2="21" y2="4" class="link weak"/></svg>inspired by</label>
-          <label><input type="checkbox" id="prop-P144" checked>
-            <svg width="22" height="8" aria-hidden="true"><line x1="1" y1="4" x2="21" y2="4" class="link weak"/></svg>based on</label>
-        </div>
-      </div>
+      <span class="checks" title="Kinds of links followed backward">
+        <label><input type="checkbox" id="prop-P2860" checked>
+          <svg width="16" height="8" aria-hidden="true"><line x1="1" y1="4" x2="15" y2="4" class="link strong"/></svg>cites</label>
+        <label><input type="checkbox" id="prop-P7137" checked>
+          <svg width="16" height="8" aria-hidden="true"><line x1="1" y1="4" x2="15" y2="4" class="link strong"/></svg>acknowledged</label>
+        <label><input type="checkbox" id="prop-P941" checked>
+          <svg width="16" height="8" aria-hidden="true"><line x1="1" y1="4" x2="15" y2="4" class="link weak"/></svg>inspired by</label>
+        <label><input type="checkbox" id="prop-P144" checked>
+          <svg width="16" height="8" aria-hidden="true"><line x1="1" y1="4" x2="15" y2="4" class="link weak"/></svg>based on</label>
+      </span>
 
-      <div class="control-group">
-        <label for="maxDepth">Max Depth:</label>
-        <input type="number" id="maxDepth" value="4" min="1" max="10">
-      </div>
+      <label title="Number of generations followed backward">Depth
+        <input type="number" id="maxDepth" value="4" min="1" max="10"></label>
 
-      <div class="control-group">
-        <label for="maxNodes">Max Works:</label>
-        <input type="number" id="maxNodes" value="300" min="10" max="3000" step="10">
-      </div>
+      <label title="Maximum number of works displayed">Max
+        <input type="number" id="maxNodes" value="300" min="10" max="3000" step="10"></label>
 
-      <div class="control-group">
-        <label for="timeScale">Time Scale:</label>
+      <label title="Time scale of the axis">Scale
         <select id="timeScale" onchange="changeTimeScale()">
           <option value="auto">Auto</option>
           <option value="linear">Linear</option>
           <option value="log">Compressed past</option>
-        </select>
-      </div>
+        </select></label>
 
-      <div class="control-group">
-        <button onclick="executeQuery()">Run Query</button>
-      </div>
+      <button onclick="executeQuery()">Run</button>
 
       <div class="zoom-controls">
-        <button class="zoom-btn" onclick="zoomToMostMentioned()">Zoom to High Citers</button>
-        <button class="zoom-btn" onclick="zoomIn()">Zoom In</button>
-        <button class="zoom-btn" onclick="zoomOut()">Zoom Out</button>
-        <button class="zoom-btn" onclick="resetZoom()">Reset View</button>
-        <button class="zoom-btn" onclick="fitToContent()">Fit All</button>
+        <button class="zoom-btn" onclick="zoomToMostMentioned()" title="Zoom to the works that cite the most">High citers</button>
+        <button class="zoom-btn" onclick="zoomIn()" title="Zoom in">+</button>
+        <button class="zoom-btn" onclick="zoomOut()" title="Zoom out">−</button>
+        <button class="zoom-btn" onclick="resetZoom()" title="Reset the view">Reset</button>
+        <button class="zoom-btn" onclick="fitToContent()" title="Fit everything in the view">Fit</button>
       </div>
     </div>
-    <div class="hint">💡 Scroll = vertical, Ctrl+scroll = zoom the timeline, Shift+scroll = spread or tighten the rows, drag = move. Click a work to open it in Wikidata, Alt+click to restart from it.</div>
 
     <div id="status"></div>
     <div class="stats" id="stats"></div>
@@ -224,6 +224,45 @@
     <details class="table-view">
       <summary>List of works (table view)</summary>
       <div class="table-wrap"><table id="worksTable"></table></div>
+    </details>
+
+    <details class="table-view about">
+      <summary>About this tool and its parameters</summary>
+      <p>This tool draws the genealogy of a written work on a timeline: the works it relies on, the works those rely on, and so on, going <strong>backward only</strong>. The data comes from Wikidata and is queried live, from your browser, on the QLever endpoint (which holds the complete graph, whereas the Wikidata Query Service has been split between scholarly articles and everything else since 2024). By default it starts from « Zur Theorie der Gesellschaftsspiele » by Von Neumann, 1928 (<a href="https://www.wikidata.org/wiki/Q55867220">Q55867220</a>), a seminal paper of game theory.</p>
+
+      <h2>Parameters</h2>
+      <dl>
+        <dt>Start</dt>
+        <dd>The Wikidata identifier (QID) of the starting work; a Wikidata address can be pasted as well. If the item is an edition or a translation, the genealogy starts from its generic work.</dd>
+        <dt>Links</dt>
+        <dd>The statements followed from a work to its sources. « cites work » (P2860) and « acknowledged » (P7137) are the stronger links, drawn as solid lines; « inspired by » (P941) and « based on » (P144) are drawn as dotted lines. Untick a kind of link to leave it out.</dd>
+        <dt>Depth</dt>
+        <dd>The number of generations followed backward (1 to 10): 1 shows only the works cited by the starting work, 2 adds the works these cite, etc.</dd>
+        <dt>Max</dt>
+        <dd>The maximum number of works displayed (10 to 3000). When a network is larger, the most cited works of each generation are kept first and the status line tells how many were left out.</dd>
+        <dt>Scale</dt>
+        <dd>« Linear » gives every year the same width. « Compressed past » keeps room for the recent decades and progressively tightens the centuries and millennia before them. « Auto » compresses the past when the network spans more than 400 years.</dd>
+      </dl>
+
+      <h2>What is retrieved</h2>
+      <ul>
+        <li><strong>Works only.</strong> People, institutions and other non-works are ignored, even when a statement points to them (« acknowledged » mostly points to people).</li>
+        <li><strong>Editions grouped.</strong> Versions, editions and translations (P629 / P747) are merged with their generic work, as citing and as cited items. An edition gathering several works stays on its own.</li>
+        <li><strong>Dates.</strong> The earliest of inception (P571) and publication date (P577) is used, with its precision: a day, a year, a decade, a century or a millennium, BCE included. An imprecise date is drawn as a pale bar covering its period. Without any date, the work is placed from the active years of its author or from its earliest edition (dashed outline), or else just before the works citing it (hollow dot).</li>
+      </ul>
+
+      <h2>Reading and moving</h2>
+      <ul>
+        <li>The starting work is orange; the blue gets lighter with each generation. The size of a dot grows with the number of times the work is cited in the network.</li>
+        <li>Hover a work to see its details and highlight its links; click to open it in Wikidata; Alt+click to restart from it.</li>
+        <li>Scroll moves vertically, Ctrl+scroll zooms the timeline, Shift+scroll spreads or tightens the rows, drag moves the view, double-click zooms in on a date.</li>
+        <li>The address of the page keeps the parameters, so a network can be shared as a link.</li>
+      </ul>
+
+      <h2>Limits</h2>
+      <p>Work in progress. It is better suited to older works, whose citations were indexed by hand, than to recent works with numerous and dense citation links. QLever only accepts about one request per second after a short burst, so large networks take a few more seconds.</p>
+
+      <p>Author : <a href="https://pmartinolli.github.io/">Pascal Martinolli</a> («vibe coded» with the Claude Sonnet 4). Inspired by <a href="">CitationTree</a> by Nicolas Loizeau.</p>
     </details>
   </div>
   <div class="date-cluster-info" id="tooltip"></div>
@@ -890,9 +929,10 @@ SELECT ?item (SAMPLE(?l) AS ?label) WHERE {
       const hi = d3.max(nodes, n => (n.date ? Math.max(n.year, n.date.hi) : n.year));
       const span = Math.max(hi - lo, 1);
       const pad = Math.max(0.5, span * 0.04);
-      const y0 = lo - pad, y1 = hi + pad;
       const left = leftMargin, right = Math.max(left + 100, width - 130);
       const compressed = mode === "log" || (mode === "auto" && span > 400);
+      // With the compressed scale the recent years are wide: a small margin is enough on that side.
+      const y0 = lo - pad, y1 = hi + (compressed ? Math.min(pad, 2) : pad);
       if (!compressed) {
         return {
           compressed, y0, y1,

@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scholarly Timelined Network</title>
+  <meta name="author" content="Pascal Martinolli">
+  <meta name="description" content="A genealogy of written works, crawled backward from a starting work through « cites work », « acknowledged », « inspired by » and « based on » statements of Wikidata, and laid out on a timeline. By default it starts from « Zur Theorie der Gesellschaftsspiele » by Von Neumann, 1928 (Q55867220). The JavaScript code is executed in the browser and queries QLever, with data from Wikidata. This tool is inspired by CitationTree by Nicolas Loizeau.">
+  <meta name="keywords" content="HTML, CSS, JavaScript, Wikidata, SPARQL, timeline, graph, network, academic papers">
+  <script src="d3.v7.min.js"></script>
+  <script>
+    // Fallback when the local copy of D3 is not next to this file.
+    window.d3 || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"><\/script>');
+  </script>
+  <style>
+    :root {
+      --surface: #ffffff;
+      --page: #f8f9fa;
+      --text: #333333;
+      --text-secondary: #555555;
+      --text-muted: #6b6b6b;
+      --border: #dddddd;
+      --grid: #ececec;
+      --link: #7d8590;
+      --accent: #c2410c;
+      /* generation 0 = starting work, then one blue hue from dark (close) to light (remote) */
+      --gen-0: #eb6834;
+      --gen-1: #0d366b;
+      --gen-2: #1c5cab;
+      --gen-3: #2a78d6;
+      --gen-4: #5598e7;
+      --gen-5: #86b6ef;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--page);
+      color: var(--text);
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: var(--surface);
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      padding: 20px;
+    }
+    h1 { color: var(--text); text-align: center; margin-bottom: 30px; }
+    .controls {
+      display: flex;
+      gap: 14px 20px;
+      margin-bottom: 14px;
+      align-items: end;
+      flex-wrap: wrap;
+    }
+    .control-group { display: flex; flex-direction: column; gap: 5px; }
+    label, .group-title { font-weight: 600; color: var(--text-secondary); font-size: 14px; }
+    input[type="text"], input[type="number"], select, button {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+    input[type="number"] { width: 80px; }
+    #startingEntity { width: 130px; }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button:hover { background: #0056b3; }
+    .checks { display: flex; gap: 4px 14px; flex-wrap: wrap; align-items: center; min-height: 35px; }
+    .checks label { font-weight: 500; font-size: 13px; display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
+    .checks svg { flex: none; }
+    .zoom-controls { display: flex; gap: 10px; margin-left: auto; flex-wrap: wrap; align-items: center; }
+    .zoom-btn { padding: 6px 12px; font-size: 12px; background: #6c757d; }
+    .zoom-btn:hover { background: #545b62; }
+    .hint { font-size: 11px; color: var(--text-muted); }
+    #status {
+      margin: 10px 0;
+      font-size: 14px;
+      padding: 10px;
+      border-radius: 4px;
+      background: #f1f3f4;
+    }
+    .stats { display: flex; gap: 6px 20px; flex-wrap: wrap; margin: 10px 0; font-size: 13px; color: var(--text-muted); }
+    .legend { display: flex; gap: 6px 18px; flex-wrap: wrap; align-items: center; margin: 8px 0 10px; font-size: 12px; color: var(--text-secondary); }
+    .legend span { display: inline-flex; align-items: center; gap: 5px; }
+    .legend .sep { width: 1px; height: 14px; background: var(--border); }
+    .legend .node { pointer-events: none; }
+    .svg-container {
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      background: var(--surface);
+    }
+    svg#network { display: block; width: 100%; cursor: grab; touch-action: none; }
+    svg#network:active { cursor: grabbing; }
+    .node { cursor: pointer; stroke: var(--surface); stroke-width: 1.5px; }
+    .node.estimated { stroke: var(--text); stroke-dasharray: 2.5 2; stroke-width: 1.2px; }
+    .node.undated { fill: var(--surface) !important; stroke: var(--text-muted); stroke-dasharray: 2.5 2; stroke-width: 1.4px; }
+    .node.hover, .node:hover { stroke: var(--accent); stroke-width: 2.5px; stroke-dasharray: none; }
+    .link { stroke: var(--link); fill: none; }
+    .link.strong { stroke-width: 1.5px; stroke-opacity: var(--link-opacity, 0.6); }
+    .link.weak { stroke-width: 1.8px; stroke-opacity: 0.8; stroke-dasharray: 0.1 5; stroke-linecap: round; }
+    .link.hover { stroke: var(--accent); stroke-opacity: 1; }
+    .dimmed .link:not(.hover) { stroke-opacity: 0.08; }
+    .dimmed .node:not(.hover) { opacity: 0.25; }
+    .dimmed .label:not(.hover) { opacity: 0.15; }
+    .range { opacity: 0.22; pointer-events: none; }
+    .label {
+      font-size: 11px;
+      font-weight: 500;
+      fill: var(--text);
+      pointer-events: none;
+      paint-order: stroke;
+      stroke: var(--surface);
+      stroke-width: 3px;
+      stroke-linejoin: round;
+    }
+    .label.root { font-weight: 700; }
+    .gridline { stroke: var(--grid); stroke-width: 1px; shape-rendering: crispEdges; }
+    .axis-band { fill: var(--surface); opacity: 0.94; }
+    .axis-line { stroke: #333; stroke-width: 2px; }
+    .tick line { stroke: #666; }
+    .tick text { font-size: 11px; fill: var(--text-secondary); text-anchor: middle; }
+    .axis-title { font-size: 12px; font-weight: 600; fill: var(--text-muted); text-anchor: middle; }
+    .date-cluster-info {
+      position: absolute;
+      max-width: 340px;
+      background: rgba(0,0,0,0.85);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      line-height: 1.45;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 10;
+    }
+    .date-cluster-info .muted { color: #c9c9c9; }
+    details.table-view { margin-top: 14px; font-size: 13px; }
+    details.table-view summary { cursor: pointer; font-weight: 600; color: var(--text-secondary); }
+    .table-wrap { max-height: 420px; overflow: auto; margin-top: 8px; border: 1px solid var(--border); border-radius: 4px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { text-align: left; padding: 5px 10px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+    th { position: sticky; top: 0; background: #f1f3f4; color: var(--text-secondary); }
+    td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Scholarly Timelined Network: a Genealogy of Written Works by Backward Citations</h1>
+    <p>By default it is built on the early papers on game theory, starting by the seminal paper « Zur Theorie der Gesellschaftsspiele » by Von Neumann in 1928 (<a href="https://www.wikidata.org/wiki/Q55867220">Q55867220</a>). The network is crawled <strong>backward only</strong>, from the starting work to the works it relies on: « cites work » (P2860) and « acknowledged » (P7137) are drawn as solid lines, « inspired by » (P941) and « based on » (P144) as dotted lines. Versions, editions and translations (P629 / P747) are grouped with their generic work, and only works are kept (no people, no institutions). The JavaScript code is executed in the browser and it is querying Qlever, with data from Wikidata (Qlever has a complete graph, whereas Wikidata is divided between scholarly articles and all else since 2024). This tool is inspired by <a href="">CitationTree</a> by Nicolas Loizeau.</p>
+    <p>Author : <a href="https://pmartinolli.github.io/">Pascal Martinolli</a> («vibe coded» with the Claude Sonnet 4)</p>
+    <p>Work in progress : very large or very dense networks are capped by « Max works » (the most cited works of each generation are kept first). It is better suited to older works where citations are manually indexed, and less effective for recent works with numerous and complex citation links.</p>
+
+    <div class="controls">
+      <div class="control-group">
+        <label for="startingEntity">Starting Work (QID):</label>
+        <input type="text" id="startingEntity" placeholder="e.g. Q55867220" value="Q55867220">
+      </div>
+
+      <div class="control-group">
+        <span class="group-title">Links followed backward:</span>
+        <div class="checks">
+          <label><input type="checkbox" id="prop-P2860" checked>
+            <svg width="22" height="8" aria-hidden="true"><line x1="1" y1="4" x2="21" y2="4" class="link strong"/></svg>cites work</label>
+          <label><input type="checkbox" id="prop-P7137" checked>
+            <svg width="22" height="8" aria-hidden="true"><line x1="1" y1="4" x2="21" y2="4" class="link strong"/></svg>acknowledged</label>
+          <label><input type="checkbox" id="prop-P941" checked>
+            <svg width="22" height="8" aria-hidden="true"><line x1="1" y1="4" x2="21" y2="4" class="link weak"/></svg>inspired by</label>
+          <label><input type="checkbox" id="prop-P144" checked>
+            <svg width="22" height="8" aria-hidden="true"><line x1="1" y1="4" x2="21" y2="4" class="link weak"/></svg>based on</label>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label for="maxDepth">Max Depth:</label>
+        <input type="number" id="maxDepth" value="4" min="1" max="10">
+      </div>
+
+      <div class="control-group">
+        <label for="maxNodes">Max Works:</label>
+        <input type="number" id="maxNodes" value="300" min="10" max="3000" step="10">
+      </div>
+
+      <div class="control-group">
+        <label for="timeScale">Time Scale:</label>
+        <select id="timeScale" onchange="changeTimeScale()">
+          <option value="auto">Auto</option>
+          <option value="linear">Linear</option>
+          <option value="log">Compressed past</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <button onclick="executeQuery()">Run Query</button>
+      </div>
+
+      <div class="zoom-controls">
+        <button class="zoom-btn" onclick="zoomToMostMentioned()">Zoom to High Citers</button>
+        <button class="zoom-btn" onclick="zoomIn()">Zoom In</button>
+        <button class="zoom-btn" onclick="zoomOut()">Zoom Out</button>
+        <button class="zoom-btn" onclick="resetZoom()">Reset View</button>
+        <button class="zoom-btn" onclick="fitToContent()">Fit All</button>
+      </div>
+    </div>
+    <div class="hint">💡 Scroll = vertical, Ctrl+scroll = zoom the timeline, Shift+scroll = spread or tighten the rows, drag = move. Click a work to open it in Wikidata, Alt+click to restart from it.</div>
+
+    <div id="status"></div>
+    <div class="stats" id="stats"></div>
+    <div class="legend" id="legend"></div>
+
+    <div class="svg-container">
+      <svg id="network" height="700" role="img" aria-label="Timeline network of works. The same content is available in the table below."></svg>
+    </div>
+
+    <details class="table-view">
+      <summary>List of works (table view)</summary>
+      <div class="table-wrap"><table id="worksTable"></table></div>
+    </details>
+  </div>
+  <div class="date-cluster-info" id="tooltip"></div>
+
+  <script>
+    "use strict";
+
+    /* =====================================================================
+       CONFIGURATION
+       ===================================================================== */
+
+    // change after oct 2025, not anymore:
+    // const SPARQL_ENDPOINT = "https://qlever.cs.uni-freiburg.de/api/wikidata";
+    const SPARQL_ENDPOINT = "https://qlever.dev/api/wikidata";
+
+    // Properties followed backward (from a work to the works it relies on).
+    // "strong" links are drawn as solid lines, "weak" links as dotted lines.
+    const LINK_TYPES = {
+      P2860: { label: "cites work",   strength: "strong" },
+      P7137: { label: "acknowledged", strength: "strong" },
+      P941:  { label: "inspired by",  strength: "weak" },
+      P144:  { label: "based on",     strength: "weak" }
+    };
+
+    // An item is kept when one of its classes (P31) is a subclass of one of these...
+    const WORK_ROOTS = [
+      "Q15621286", // intellectual work
+      "Q17537576", // creative work
+      "Q47461344", // written work
+      "Q732577",   // publication
+      "Q3331189",  // version, edition or translation
+      "Q17489659"  // group of works
+    ];
+    // ...and none of its classes is a subclass of one of these.
+    const EXCLUDED_ROOTS = [
+      "Q24229398", // agent: humans, organisations, institutions, characters, deities
+      "Q16334295", // group of humans
+      "Q17442446"  // Wikimedia internal item (disambiguation pages, lists...)
+    ];
+
+    const BATCH_SIZE = 200;      // number of items sent in one query
+    // QLever accepts a short burst of requests, then about one per second (HTTP 429 beyond that).
+    // The crawl therefore sends few, grouped queries and paces itself.
+    const MAX_PARALLEL = 3;      // simultaneous requests
+    const BURST = 8;             // requests allowed at once
+    const PER_SECOND = 1;        // sustained rate
+    const LABEL_LANGS = ["en", "mul", "fr", "de", "es", "it", "la"];   // by order of preference
+    const ROW_HEIGHT = 26;       // vertical distance between two branches, in pixels
+    const AXIS_HEIGHT = 46;
+
+    const PREFIXES = `PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX p: <http://www.wikidata.org/prop/>
+PREFIX psv: <http://www.wikidata.org/prop/statement/value/>
+PREFIX pqv: <http://www.wikidata.org/prop/qualifier/value/>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+`;
+    const ENTITY = "http://www.wikidata.org/entity/";
+
+    let graphData = { nodes: [], links: [] };
+    let network = null;          // result of the last crawl
+    let currentRun = null;       // AbortController of the running query
+    let citationCounts = new Map();
+
+    /* =====================================================================
+       SPARQL HELPERS
+       ===================================================================== */
+
+    const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+    const isItem = v => !!v && v.type === "uri" && /^http:\/\/www\.wikidata\.org\/entity\/Q\d+$/.test(v.value);
+    const qid = uri => uri.slice(ENTITY.length);
+
+    let activeRequests = 0;
+    const waitingRequests = [];
+    let tokens = BURST, lastRefill = performance.now();
+    let onThrottle = null;       // called when QLever asks to slow down
+
+    async function takeSlot() {
+      if (activeRequests >= MAX_PARALLEL) await new Promise(resolve => waitingRequests.push(resolve));
+      activeRequests++;
+      for (;;) {
+        const now = performance.now();
+        tokens = Math.min(BURST, tokens + (now - lastRefill) / 1000 * PER_SECOND);
+        lastRefill = now;
+        if (tokens >= 1) { tokens -= 1; return; }
+        await sleep((1 - tokens) / PER_SECOND * 1000);
+      }
+    }
+    function releaseSlot() {
+      activeRequests--;
+      const next = waitingRequests.shift();
+      if (next) next();
+    }
+
+    async function sparql(query, signal) {
+      for (let attempt = 0; ; attempt++) {
+        await takeSlot();
+        let response, failure = null;
+        try {
+          response = await fetch(SPARQL_ENDPOINT, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/sparql-query",
+              "Accept": "application/sparql-results+json"
+            },
+            body: PREFIXES + query,
+            signal
+          });
+          if (response.ok) {
+            const data = await response.json();
+            return (data.results && data.results.bindings) || [];
+          }
+        } catch (error) {
+          if (error.name === "AbortError") throw error;
+          failure = error;
+        } finally {
+          releaseSlot();
+        }
+        if (failure) {
+          if (attempt >= 2) throw failure;
+          await sleep(1000 * (attempt + 1));
+          continue;
+        }
+        const body = await response.text().catch(() => "");
+        if (/timed out/i.test(body)) throw new Error("QLever timed out on this query. Try a smaller depth or fewer works.");
+        if (attempt >= 4 || ![429, 500, 502, 503, 504].includes(response.status)) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText || "query refused"}`);
+        }
+        // Too many requests: empty the allowance and wait longer each time.
+        tokens = 0; lastRefill = performance.now();
+        if (onThrottle) onThrottle();
+        await sleep(2000 * (attempt + 1));
+        if (signal && signal.aborted) throw new DOMException("Aborted", "AbortError");
+      }
+    }
+
+    // Runs one query per batch of ids. `build` receives a ready-to-use "wd:Q1 wd:Q2 ..." string.
+    async function batched(ids, build, signal, size = BATCH_SIZE) {
+      const chunks = [];
+      for (let i = 0; i < ids.length; i += size) chunks.push(ids.slice(i, i + size));
+      const results = await Promise.all(
+        chunks.map(chunk => sparql(build(chunk.map(id => "wd:" + id).join(" ")), signal)));
+      return results.flat();
+    }
+
+    /* =====================================================================
+       WORKS ONLY: classification of the classes (P31) met during the crawl
+       ===================================================================== */
+
+    // class QID -> "work" | "excluded" | "other". Kept in the browser between visits to save requests.
+    const CLASS_CACHE_KEY = "stn-class-verdicts-v1";
+    const classVerdict = new Map();
+    try {
+      Object.entries(JSON.parse(localStorage.getItem(CLASS_CACHE_KEY) || "{}")).forEach(([c, v]) => classVerdict.set(c, v));
+    } catch (error) { /* storage unavailable: the classes are simply asked again */ }
+
+    async function classify(classes, signal) {
+      const unknown = classes.filter(c => !classVerdict.has(c));
+      if (!unknown.length) return;
+      const roots = WORK_ROOTS.concat(EXCLUDED_ROOTS).map(r => "wd:" + r).join(" ");
+      const rows = await batched(unknown, ids => `
+SELECT ?cls ?root WHERE {
+  VALUES ?cls { ${ids} }
+  VALUES ?root { ${roots} }
+  ?cls wdt:P279* ?root .
+}`, signal, 200);
+      const reached = new Map();
+      rows.forEach(r => {
+        const c = qid(r.cls.value);
+        if (!reached.has(c)) reached.set(c, new Set());
+        reached.get(c).add(qid(r.root.value));
+      });
+      unknown.forEach(c => {
+        const set = reached.get(c) || new Set();
+        classVerdict.set(c,
+          EXCLUDED_ROOTS.some(r => set.has(r)) ? "excluded" :
+          WORK_ROOTS.some(r => set.has(r)) ? "work" : "other");
+      });
+      try { localStorage.setItem(CLASS_CACHE_KEY, JSON.stringify(Object.fromEntries(classVerdict))); } catch (error) { /* ignore */ }
+    }
+
+    /* =====================================================================
+       BACKWARD CRAWL
+       One generation at a time, from the starting work to the works it cites,
+       then to the works they cite, etc. Never forward.
+       ===================================================================== */
+
+    async function crawl({ start, props, maxDepth, maxNodes, signal, onProgress }) {
+      const net = {
+        nodes: new Map(),     // canonical work QID -> node
+        links: new Map(),     // "source>target" -> link
+        start, rootId: start,
+        notShown: 0,          // works left out because of « Max works »
+        skipped: 0,           // targets that are not works (people, institutions...)
+        depthReached: 0
+      };
+      const addNode = (id, depth, parent) => {
+        const node = { id, depth, parent, members: new Set(), outDeg: 0, inDeg: 0 };
+        net.nodes.set(id, node);
+        return node;
+      };
+      const addLink = (source, target, prop, via) => {
+        const key = source + ">" + target;
+        let link = net.links.get(key);
+        if (!link) {
+          link = { source, target, props: new Set(), via: new Set() };
+          net.links.set(key, link);
+        }
+        link.props.add(prop);
+        via.forEach(v => link.via.add(v));
+      };
+
+      // The starting item may itself be an edition or a translation: start from its work.
+      const startRows = await sparql(`SELECT ?work WHERE { wd:${start} wdt:P629 ?work }`, signal);
+      const startWorks = [...new Set(startRows.filter(r => isItem(r.work)).map(r => qid(r.work.value)))];
+      if (startWorks.length === 1) net.rootId = startWorks[0];
+      const root = addNode(net.rootId, 0, null);
+      if (net.rootId !== start) root.members.add(start);
+
+      let frontier = [net.rootId];
+      for (let depth = 0; depth < maxDepth && frontier.length; depth++) {
+        onProgress(`Generation ${depth + 1} of ${maxDepth}: reading the links of ${frontier.length} work${frontier.length > 1 ? "s" : ""}… (${net.nodes.size} works so far)`);
+
+        // One grouped query per generation (per batch of works):
+        //  - "edition" rows: the editions and translations of the works of this generation;
+        //  - "link" rows: the outgoing links of these works and of their editions, with the class
+        //    of each target and, when the target is itself an edition, its generic work.
+        const propValues = `VALUES ?p { ${props.map(p => "wdt:" + p).join(" ")} }`;
+        const target = "OPTIONAL { ?tgt wdt:P629 ?tgtWork } OPTIONAL { ?tgtWork2 wdt:P747 ?tgt } OPTIONAL { ?tgt wdt:P31 ?cls }";
+        const rows = await batched(frontier, ids => `
+SELECT ?kind ?src ?via ?other ?p ?tgt ?tgtWork ?tgtWork2 ?cls WHERE {
+  { VALUES ?src { ${ids} } ?via wdt:P629 ?src . OPTIONAL { ?via wdt:P629 ?other } BIND("edition" AS ?kind) }
+  UNION
+  { VALUES ?src { ${ids} } ?src wdt:P747 ?via . OPTIONAL { ?via wdt:P629 ?other } BIND("edition" AS ?kind) }
+  UNION
+  { VALUES ?via { ${ids} } ${propValues} ?via ?p ?tgt . ${target} BIND("link" AS ?kind) }
+  UNION
+  { VALUES ?src { ${ids} } ?via wdt:P629 ?src . ${propValues} ?via ?p ?tgt . ${target} BIND("link" AS ?kind) }
+  UNION
+  { VALUES ?src { ${ids} } ?src wdt:P747 ?via . ${propValues} ?via ?p ?tgt . ${target} BIND("link" AS ?kind) }
+}`, signal);
+
+        // 1. Editions and translations: their links are attributed to the generic work.
+        const memberOf = new Map(frontier.map(id => [id, id]));
+        const parentWorks = new Map();
+        rows.forEach(r => {
+          if (r.kind.value !== "edition" || !isItem(r.via)) return;
+          const via = qid(r.via.value);
+          if (!parentWorks.has(via)) parentWorks.set(via, new Set());
+          parentWorks.get(via).add(qid(r.src.value));
+          if (isItem(r.other)) parentWorks.get(via).add(qid(r.other.value));
+        });
+        parentWorks.forEach((works, via) => {
+          // An edition gathering several works (anthology...) is not merged with any of them.
+          if (works.size !== 1 || net.nodes.has(via)) return;
+          const work = [...works][0];
+          memberOf.set(via, work);
+          net.nodes.get(work).members.add(via);
+        });
+
+        // 2. Links of these works and editions.
+        const linkRows = rows.filter(r => r.kind.value === "link" && isItem(r.via) && memberOf.has(qid(r.via.value)));
+
+        const targets = new Map();   // raw target QID -> { works, classes, hits }
+        linkRows.forEach(r => {
+          if (!isItem(r.tgt)) return;
+          const tgt = qid(r.tgt.value);
+          let t = targets.get(tgt);
+          if (!t) { t = { works: new Set(), classes: new Set(), hits: new Map() }; targets.set(tgt, t); }
+          if (isItem(r.tgtWork)) t.works.add(qid(r.tgtWork.value));
+          if (isItem(r.tgtWork2)) t.works.add(qid(r.tgtWork2.value));
+          if (isItem(r.cls)) t.classes.add(qid(r.cls.value));
+          const via = qid(r.via.value);
+          const prop = r.p.value.split("/").pop();
+          t.hits.set(via + "|" + prop, { via, prop });
+        });
+
+        // 3. Keep works only.
+        const allClasses = new Set();
+        targets.forEach(t => t.classes.forEach(c => allClasses.add(c)));
+        await classify([...allClasses], signal);
+
+        const candidates = new Map();   // canonical target -> [{ source, prop, via }]
+        targets.forEach((t, tgt) => {
+          const verdicts = [...t.classes].map(c => classVerdict.get(c));
+          const isWork = !verdicts.includes("excluded") && (
+            verdicts.includes("work") ||
+            t.works.size > 0 ||
+            // « cites work » always points to a work, even when its class is unusual or missing
+            [...t.hits.values()].some(h => h.prop === "P2860"));
+          if (!isWork) { net.skipped++; return; }
+          const canonical = t.works.size === 1 ? [...t.works][0] : tgt;
+          t.hits.forEach(hit => {
+            if (hit.prop !== "P2860" && !verdicts.includes("work") && t.works.size === 0) return;
+            const source = memberOf.get(hit.via);
+            if (source === canonical) return;   // an edition citing its own work
+            const via = [];
+            if (hit.via !== source) via.push(hit.via);
+            if (tgt !== canonical) via.push(tgt);
+            if (!candidates.has(canonical)) candidates.set(canonical, []);
+            candidates.get(canonical).push({ source, prop: hit.prop, via, raw: tgt });
+          });
+        });
+
+        // 4. Add the links; add the new works, the most cited of this generation first.
+        const fresh = [];
+        candidates.forEach((hits, target) => {
+          if (net.nodes.has(target)) hits.forEach(h => addLink(h.source, target, h.prop, h.via));
+          else fresh.push({ target, hits, weight: new Set(hits.map(h => h.source)).size });
+        });
+        fresh.sort((a, b) => b.weight - a.weight || (+a.target.slice(1)) - (+b.target.slice(1)));
+        const next = [];
+        fresh.forEach(({ target, hits }) => {
+          if (net.nodes.size >= maxNodes) { net.notShown++; return; }
+          const node = addNode(target, depth + 1, hits[0].source);
+          hits.forEach(h => {
+            if (h.raw !== target) node.members.add(h.raw);
+            addLink(h.source, target, h.prop, h.via);
+          });
+          next.push(target);
+        });
+        if (next.length) net.depthReached = depth + 1;
+        frontier = next;
+      }
+      return net;
+    }
+
+    /* =====================================================================
+       DATES
+       Wikidata dates are read with their precision and parsed here, never by
+       the JavaScript Date object (which cannot handle BCE years).
+       Internally a date is a decimal astronomical year: 1 = 1 CE, 0 = 1 BCE,
+       -99 = 100 BCE.
+       ===================================================================== */
+
+    const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+    function formatYear(astronomicalYear) {
+      const y = Math.floor(astronomicalYear);
+      if (y <= 0) return `${1 - y} BCE`;
+      return y < 1000 ? `${y} CE` : String(y);
+    }
+
+    function ordinal(n) {
+      const rest = n % 100;
+      if (rest >= 11 && rest <= 13) return n + "th";
+      return n + (["th", "st", "nd", "rd"][n % 10] || "th");
+    }
+
+    // Returns { x, lo, hi, label, prec } or null. `x` is the position on the timeline,
+    // [lo, hi[ the period covered by the value (a whole century for a century, etc.).
+    // Precisions: 11 day, 10 month, 9 year, 8 decade, 7 century, 6 millennium.
+    function parseWikidataTime(value, precision) {
+      const m = /^([+-]?\d+)-(\d\d)-(\d\d)/.exec(value || "");
+      if (!m) return null;   // "unknown value", malformed literal...
+      const y = parseInt(m[1], 10);
+      const month = Math.max(1, Math.min(12, +m[2]));
+      const day = Math.max(1, Math.min(31, +m[3]));
+      const prec = Number.isFinite(precision) ? precision : 9;
+
+      if (prec >= 9) {
+        // Year or finer: the RDF export already uses astronomical years (-0099 is 100 BCE).
+        if (prec >= 11) {
+          const x = y + ((month - 1) + (day - 1) / 31) / 12;
+          return { x, lo: x, hi: x, prec, label: `${day} ${MONTHS[month - 1]} ${formatYear(y)}` };
+        }
+        if (prec === 10) {
+          const lo = y + (month - 1) / 12, hi = y + month / 12;
+          return { x: (lo + hi) / 2, lo, hi, prec, label: `${MONTHS[month - 1]} ${formatYear(y)}` };
+        }
+        return { x: y + 0.5, lo: y, hi: y + 1, prec, label: formatYear(y) };
+      }
+
+      // Decade or coarser: the year is NOT shifted by the RDF export (-0300 is "300 BCE"),
+      // and it only designates the period it belongs to.
+      const bce = y < 0;
+      const n = Math.max(1, Math.abs(y));
+      let first, last, label;   // period in historical years, counted from 1
+      if (prec === 8) {
+        first = Math.floor(n / 10) * 10; last = first + 9;
+        label = `${first}s`;
+      } else if (prec === 7 || prec === 6) {
+        const unit = prec === 7 ? 100 : 1000;
+        const index = Math.ceil(n / unit);
+        first = (index - 1) * unit + 1; last = index * unit;
+        label = `${ordinal(index)} ${prec === 7 ? "century" : "millennium"}`;
+      } else {
+        const unit = Math.pow(10, 9 - prec);
+        first = Math.max(1, n - unit / 2); last = n + unit / 2;
+        label = `c. ${n.toLocaleString("en")}`;
+      }
+      label += bce ? " BCE" : (first < 1000 ? " CE" : "");
+      const lo = bce ? 1 - last : first;
+      const hi = bce ? 2 - first : last + 1;
+      return { x: (lo + hi) / 2, lo, hi, prec, label };
+    }
+
+    function rangeLabel(a, b) {
+      const from = a.label.endsWith(" BCE") && b.label.endsWith(" BCE") ? a.label.slice(0, -4) : a.label;
+      return `${from} – ${b.label}`;
+    }
+
+    // One date statement, possibly refined by its « earliest date » / « latest date » qualifiers.
+    function statementDate(st) {
+      const { main, earliest, latest } = st;
+      const finer = q => q && (!main || q.prec > main.prec);
+      if (finer(earliest) && finer(latest) && latest.hi >= earliest.lo) {
+        return { x: (earliest.lo + latest.hi) / 2, lo: earliest.lo, hi: latest.hi, label: rangeLabel(earliest, latest) };
+      }
+      if (!main && earliest) return { ...earliest, label: `after ${earliest.label}` };
+      if (!main && latest) return { ...latest, label: `before ${latest.label}` };
+      return main;
+    }
+
+    const DATE_SOURCES = { P571: "inception", P577: "publication date", P1319: "earliest date", P1326: "latest date" };
+
+    // Chooses the date of a work among its statements:
+    //   1. the earliest of inception (P571) and publication date (P577), preferred rank first;
+    //   2. earliest date (P1319) / latest date (P1326);
+    //   3. an estimate from the lifetime of the authors, or from the earliest edition recorded.
+    function chooseDate(statements, authors, editionYears) {
+      const live = (statements || []).filter(s => s.rank !== "DeprecatedRank");
+      const best = [];
+      ["P571", "P577"].forEach(prop => {
+        let sts = live.filter(s => s.prop === prop);
+        if (sts.some(s => s.rank === "PreferredRank")) sts = sts.filter(s => s.rank === "PreferredRank");
+        sts.forEach(s => {
+          const d = statementDate(s);
+          if (d) best.push({ ...d, quality: "recorded", source: DATE_SOURCES[prop] });
+        });
+      });
+      if (best.length) return best.reduce((a, b) => (b.x < a.x ? b : a));
+
+      const earliest = live.filter(s => s.prop === "P1319" && s.main).map(s => s.main).sort((a, b) => a.x - b.x)[0];
+      const latest = live.filter(s => s.prop === "P1326" && s.main).map(s => s.main).sort((a, b) => b.x - a.x)[0];
+      if (earliest && latest && latest.hi >= earliest.lo) {
+        return { x: (earliest.lo + latest.hi) / 2, lo: earliest.lo, hi: latest.hi, label: rangeLabel(earliest, latest), quality: "recorded", source: "earliest and latest dates" };
+      }
+      if (earliest) return { ...earliest, label: `after ${earliest.label}`, quality: "recorded", source: "earliest date" };
+      if (latest) return { ...latest, label: `before ${latest.label}`, quality: "recorded", source: "latest date" };
+
+      // Estimates
+      let lifetime = null;
+      (authors || []).forEach(a => {
+        let from = null, to = null;
+        if (a.floruit != null) { from = a.floruit; to = a.floruit + 1; }
+        else if (a.birth != null || a.death != null) {
+          from = a.birth != null ? a.birth + 18 : a.death - 50;
+          to = a.death != null ? a.death + 1 : a.birth + 80;
+        }
+        if (from == null) return;
+        lifetime = lifetime ? { lo: Math.max(lifetime.lo, from), hi: Math.min(lifetime.hi, to) } : { lo: from, hi: to };
+      });
+      if (lifetime && lifetime.hi < lifetime.lo) lifetime.hi = lifetime.lo + 1;
+      const firstEdition = editionYears && editionYears.length ? Math.min(...editionYears) : null;
+
+      if (firstEdition != null && (!lifetime || (firstEdition >= lifetime.lo - 18 && firstEdition <= lifetime.hi))) {
+        return { x: firstEdition + 0.5, lo: firstEdition, hi: firstEdition + 1, label: `${formatYear(firstEdition)} or earlier`, quality: "estimated", source: "earliest edition recorded" };
+      }
+      if (lifetime) {
+        const x = (lifetime.lo + lifetime.hi) / 2;
+        return { x, lo: lifetime.lo, hi: lifetime.hi, label: `c. ${formatYear(x)}`, quality: "estimated", source: "active years of the author" };
+      }
+      return null;
+    }
+
+    /* =====================================================================
+       METADATA of the works kept: labels, dates, authors
+       ===================================================================== */
+
+    async function loadMetadata(net, signal) {
+      const ids = [...net.nodes.keys()];
+      const langs = LABEL_LANGS.map(l => `"${l}"`).join(",");
+
+      // One grouped query (per batch of works); ?kind tells what each row is.
+      // Authors are only read to describe and to date the works; they never become nodes.
+      const rows = await batched(ids, v => {
+        const V = `VALUES ?item { ${v} }`;
+        const branches = [
+          `{ ${V} ?item rdfs:label ?a . FILTER(LANG(?a) IN (${langs})) BIND("label" AS ?kind) }`,
+          // Full statements, to get the precision and the rank of each date
+          ...Object.keys(DATE_SOURCES).map(P =>
+            `{ ${V} ?item p:${P} ?st . ?st psv:${P} ?value ; wikibase:rank ?b . ?value wikibase:timeValue ?a ; wikibase:timePrecision ?c . BIND("date:${P}" AS ?kind) }`),
+          // « earliest date » and « latest date » given as qualifiers of inception / publication date
+          ...["P571", "P577"].flatMap(P => ["P1319", "P1326"].map(Q =>
+            `{ ${V} ?item p:${P} ?st . ?st pqv:${Q} ?value . ?value wikibase:timeValue ?a ; wikibase:timePrecision ?c . BIND("qualifier:${P}:${Q}" AS ?kind) }`)),
+          `{ ${V} ?item wdt:P50 ?st . OPTIONAL { ?st wdt:P569 ?a } OPTIONAL { ?st wdt:P570 ?b } OPTIONAL { ?st wdt:P1317 ?c } BIND("author" AS ?kind) }`,
+          `{ ${V} ?item wdt:P50 ?st . ?st rdfs:label ?a . FILTER(LANG(?a) IN ("en","mul")) BIND("authorLabel" AS ?kind) }`,
+          `{ ${V} ?item wdt:P2093 ?a . BIND("authorName" AS ?kind) }`,
+          `{ ${V} ?st wdt:P629 ?item . ?st wdt:P577 ?a . BIND("edition" AS ?kind) }`,
+          `{ ${V} ?item wdt:P747 ?st . ?st wdt:P577 ?a . BIND("edition" AS ?kind) }`
+        ];
+        return `\nSELECT ?kind ?item ?st ?a ?b ?c WHERE {\n  ${branches.join("\n  UNION\n  ")}\n}`;
+      }, signal);
+      const ofKind = kind => rows.filter(r => r.kind.value.split(":")[0] === kind && r.item);
+      const labelRows = ofKind("label"), dateRows = ofKind("date"), qualifierRows = ofKind("qualifier");
+      const authorRows = ofKind("author"), authorLabelRows = ofKind("authorLabel");
+      const authorNameRows = ofKind("authorName"), editionRows = ofKind("edition");
+
+      // Labels, by order of preference
+      const labels = new Map();
+      labelRows.forEach(r => {
+        const id = qid(r.item.value);
+        const rank = LABEL_LANGS.indexOf(r.a["xml:lang"]);
+        const current = labels.get(id);
+        if (!current || (rank >= 0 && rank < current.rank)) labels.set(id, { text: r.a.value, rank: rank < 0 ? 99 : rank });
+      });
+      const unlabeled = ids.filter(id => !labels.has(id));
+      if (unlabeled.length) {
+        const anyRows = await batched(unlabeled, v => `
+SELECT ?item (SAMPLE(?l) AS ?label) WHERE {
+  VALUES ?item { ${v} }
+  ?item rdfs:label ?l .
+} GROUP BY ?item`, signal);
+        anyRows.forEach(r => { if (r.label) labels.set(qid(r.item.value), { text: r.label.value, rank: 99 }); });
+      }
+
+      // Date statements
+      const statements = new Map();    // item -> [statement]
+      const byStatement = new Map();
+      const register = (item, key, prop, rank) => {
+        let st = byStatement.get(key);
+        if (!st) {
+          st = { prop, rank, main: null, earliest: null, latest: null };
+          byStatement.set(key, st);
+          if (!statements.has(item)) statements.set(item, []);
+          statements.get(item).push(st);
+        }
+        return st;
+      };
+      dateRows.forEach(r => {
+        const st = register(qid(r.item.value), r.st.value, r.kind.value.split(":")[1], r.b.value.split("#").pop());
+        st.main = parseWikidataTime(r.a.value, +r.c.value);
+      });
+      qualifierRows.forEach(r => {
+        const [, prop, qualifier] = r.kind.value.split(":");
+        const st = register(qid(r.item.value), r.st.value, prop, "NormalRank");
+        const t = parseWikidataTime(r.a.value, +r.c.value);
+        if (qualifier === "P1319") st.earliest = t; else st.latest = t;
+      });
+
+      // Authors
+      const year = v => { const t = v && parseWikidataTime(v.value, 9); return t ? Math.floor(t.lo) : null; };
+      const authors = new Map();       // item -> Map(author -> { name, birth, death, floruit })
+      const authorOf = (item, author) => {
+        if (!authors.has(item)) authors.set(item, new Map());
+        const map = authors.get(item);
+        if (!map.has(author)) map.set(author, { name: null, birth: null, death: null, floruit: null });
+        return map.get(author);
+      };
+      authorRows.forEach(r => {
+        const a = authorOf(qid(r.item.value), r.st.value);
+        const birth = year(r.a), death = year(r.b), floruit = year(r.c);
+        if (birth != null) a.birth = a.birth == null ? birth : Math.min(a.birth, birth);
+        if (death != null) a.death = a.death == null ? death : Math.max(a.death, death);
+        if (floruit != null) a.floruit = floruit;
+      });
+      authorLabelRows.forEach(r => {
+        const a = authorOf(qid(r.item.value), r.st.value);
+        if (!a.name || r.a["xml:lang"] === "en") a.name = r.a.value;
+      });
+      authorNameRows.forEach(r => { authorOf(qid(r.item.value), "name:" + r.a.value).name = r.a.value; });
+
+      // Editions (only used when the work itself has no date)
+      const editionYears = new Map();
+      editionRows.forEach(r => {
+        const y = year(r.a);
+        if (y == null) return;
+        const id = qid(r.item.value);
+        if (!editionYears.has(id)) editionYears.set(id, []);
+        editionYears.get(id).push(y);
+      });
+
+      net.nodes.forEach(node => {
+        node.label = labels.has(node.id) ? labels.get(node.id).text : node.id;
+        const people = authors.has(node.id) ? [...authors.get(node.id).values()] : [];
+        node.authors = people.map(a => a.name).filter(Boolean);
+        node.date = chooseDate(statements.get(node.id), people, editionYears.get(node.id));
+      });
+    }
+
+    /* =====================================================================
+       FROM THE CRAWL TO THE GRAPH
+       ===================================================================== */
+
+    function buildGraph(net) {
+      const nodes = [...net.nodes.values()];
+      const links = [...net.links.values()].map(l => {
+        const props = Object.keys(LINK_TYPES).filter(p => l.props.has(p));
+        return {
+          source: net.nodes.get(l.source), target: net.nodes.get(l.target),
+          props, via: [...l.via],
+          strength: props.some(p => LINK_TYPES[p].strength === "strong") ? "strong" : "weak"
+        };
+      });
+      nodes.forEach(n => { n.outDeg = 0; n.inDeg = 0; n.parentNode = n.parent ? net.nodes.get(n.parent) : null; });
+      links.forEach(l => { l.source.outDeg++; l.target.inDeg++; });
+      citationCounts = new Map(nodes.filter(n => n.outDeg).map(n => [n.id, n.outDeg]));
+
+      // Position in time. Undated works are placed a little before the earliest work citing them.
+      const dated = nodes.filter(n => n.date);
+      net.noDates = dated.length === 0;
+      const lo = d3.min(dated, n => n.date.x), hi = d3.max(dated, n => n.date.x);
+      const gap = net.noDates ? 10 : Math.max(1, (hi - lo) * 0.025);
+      const citers = new Map();
+      links.forEach(l => {
+        if (!citers.has(l.target.id)) citers.set(l.target.id, []);
+        citers.get(l.target.id).push(l.source);
+      });
+      nodes.slice().sort((a, b) => a.depth - b.depth).forEach(n => {
+        if (n.date) { n.year = n.date.x; n.quality = n.date.quality; return; }
+        n.quality = "unknown";
+        const known = (citers.get(n.id) || []).filter(c => c.year != null && c.depth < n.depth).map(c => c.year);
+        n.year = known.length ? Math.min(...known) - gap : (net.noDates ? -n.depth * gap : hi + gap);
+      });
+
+      nodes.forEach(n => {
+        n.citationCount = n.outDeg;
+        n.r = Math.min(16, 4.5 + 2.2 * Math.sqrt(n.inDeg)) + (n.depth === 0 ? 2 : 0);
+        n.shortLabel = n.label.length > 32 ? n.label.slice(0, 30).trimEnd() + "…" : n.label;
+        n.labelWidth = measure(n.shortLabel, n.depth === 0) + 6;
+        // Works that cite nothing here are the tips of the branches: their label is written on
+        // their left, where no link arrives. The other labels are written above the node.
+        n.labelSide = n.outDeg === 0 && n.depth > 0 ? "left" : "top";
+      });
+      net.leftMargin = 60;
+
+      // Rows: each branch of the genealogy gets its own row, a work sits in the middle of the works it cites.
+      const children = new Map();
+      nodes.forEach(n => {
+        if (!n.parentNode) return;
+        if (!children.has(n.parentNode.id)) children.set(n.parentNode.id, []);
+        children.get(n.parentNode.id).push(n);
+      });
+      let row = 0;
+      const place = n => {
+        const kids = (children.get(n.id) || []).sort((a, b) => a.year - b.year);
+        if (!kids.length) { n.row = row++; return; }
+        kids.forEach(place);
+        n.row = d3.mean(kids, k => k.row);
+      };
+      const rootNode = net.nodes.get(net.rootId);
+      place(rootNode);
+      // Rows are tightened when there are many branches (« Fit All » then compresses them further,
+      // Shift+scroll spreads them again).
+      const spacing = Math.max(14, Math.min(ROW_HEIGHT, 0.9 * plotHeight / Math.max(row, 1)));
+      nodes.forEach(n => { n.by = (n.row - rootNode.row) * spacing; n.by0 = null; });
+
+      // Labels are shown by order of importance when there is not enough room for all of them.
+      net.labelOrder = nodes.slice().sort((a, b) =>
+        (a.depth === 0 ? -1 : 0) - (b.depth === 0 ? -1 : 0) || (b.inDeg + b.outDeg) - (a.inDeg + a.outDeg) || a.depth - b.depth);
+
+      graphData = { nodes, links };
+    }
+
+    /* =====================================================================
+       TIME SCALE (linear, or compressing the distant past)
+       ===================================================================== */
+
+    function makeTimeScale(nodes, mode, width, leftMargin) {
+      // Imprecise dates (a century, a millennium...) count with their whole period.
+      const lo = d3.min(nodes, n => (n.date ? Math.min(n.year, n.date.lo) : n.year));
+      const hi = d3.max(nodes, n => (n.date ? Math.max(n.year, n.date.hi) : n.year));
+      const span = Math.max(hi - lo, 1);
+      const pad = Math.max(0.5, span * 0.04);
+      const y0 = lo - pad, y1 = hi + pad;
+      const left = leftMargin, right = Math.max(left + 100, width - 130);
+      const compressed = mode === "log" || (mode === "auto" && span > 400);
+      if (!compressed) {
+        return {
+          compressed, y0, y1,
+          toPx: y => left + (y - y0) / (y1 - y0) * (right - left),
+          toYear: px => y0 + (px - left) / (right - left) * (y1 - y0)
+        };
+      }
+      // Logarithm of the distance to the most recent work: recent decades keep their room,
+      // centuries and millennia are progressively compressed.
+      const K = Math.min(60, Math.max(5, span * 0.02));
+      const age = y => Math.log(Math.max(y1 - y + K, K * 0.02));
+      const a0 = age(y0), a1 = age(y1);
+      return {
+        compressed, y0, y1,
+        toPx: y => left + (a0 - age(y)) / (a0 - a1) * (right - left),
+        toYear: px => y1 + K - Math.exp(a0 - (px - left) / (right - left) * (a0 - a1))
+      };
+    }
+
+    /* =====================================================================
+       RENDERING
+       ===================================================================== */
+
+    let svg, zoom, timeScale, layers = {};
+    let width = 1360, height = 700, plotHeight = 700 - AXIS_HEIGHT;
+    const view = { kx: 1, tx: 0, ky: 1, ty: 0 };
+    let redrawPending = false;
+
+    const genColor = depth => `var(--gen-${Math.min(depth, 5)})`;
+    const measure = (() => {
+      const ctx = document.createElement("canvas").getContext("2d");
+      return (text, bold) => {
+        if (!ctx) return text.length * 6.2;
+        ctx.font = `${bold ? 700 : 500} 11px 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif`;
+        return ctx.measureText(text).width;
+      };
+    })();
+
+    function computeBaseLayout() {
+      const mode = document.getElementById("timeScale").value;
+      // The left margin grows until the labels written on the left of the oldest works fit in.
+      let margin = 60;
+      for (let pass = 0; pass < 4; pass++) {
+        timeScale = makeTimeScale(graphData.nodes, mode, width, margin);
+        const overflow = d3.max(graphData.nodes, n =>
+          (n.labelSide === "left" ? n.labelWidth + n.r + 14 : n.labelWidth / 2 + 8) -
+          timeScale.toPx(n.labelSide === "left" && n.date ? Math.min(n.year, n.date.lo) : n.year));
+        if (overflow <= 0 || margin >= width * 0.3) break;
+        margin = Math.min(width * 0.3, margin + overflow);
+      }
+      network.leftMargin = margin;
+      graphData.nodes.forEach(n => {
+        n.bx = timeScale.toPx(n.year);
+        const wide = n.date && n.date.hi - n.date.lo >= 2;
+        n.blo = wide ? timeScale.toPx(n.date.lo) : n.bx;
+        n.bhi = wide ? timeScale.toPx(n.date.hi) : n.bx;
+      });
+      // Works of the same period and the same row are pushed apart vertically (x never moves: it is the date).
+      const bodies = graphData.nodes.map(n => ({ x: n.bx, fx: n.bx, y: n.by0 != null ? n.by0 : n.by, home: n.by0 != null ? n.by0 : n.by, r: n.r, node: n }));
+      graphData.nodes.forEach(n => { if (n.by0 == null) n.by0 = n.by; });
+      const simulation = d3.forceSimulation(bodies)
+        .force("collision", d3.forceCollide().radius(b => b.r + 6).strength(0.9))
+        .force("y", d3.forceY(b => b.home).strength(0.08))
+        .stop();
+      for (let i = 0; i < 120; i++) simulation.tick();
+      bodies.forEach(b => { b.node.by = b.y; });
+    }
+
+    function renderGraph() {
+      svg = d3.select("#network");
+      svg.selectAll("*").remove();
+      document.getElementById("tooltip").style.opacity = "0";
+      width = svg.node().clientWidth || 1360;
+      height = +svg.attr("height");
+      plotHeight = height - AXIS_HEIGHT;
+      svg.attr("viewBox", `0 0 ${width} ${height}`);
+
+      computeBaseLayout();
+
+      layers.grid = svg.append("g");
+      // Dense networks get lighter links
+      const g = svg.append("g").attr("class", "plot")
+        .style("--link-opacity", Math.max(0.18, Math.min(0.6, 0.6 * Math.sqrt(250 / Math.max(graphData.links.length, 1)))));
+      layers.plot = g;
+      layers.links = g.append("g").selectAll("line").data(graphData.links).enter().append("line")
+        .attr("class", d => "link " + d.strength);
+      layers.links.append("title").text(d =>
+        `${d.source.label} → ${d.target.label}: ${d.props.map(p => LINK_TYPES[p].label).join(", ")}` +
+        (d.via.length ? ` (through the edition${d.via.length > 1 ? "s" : ""} ${d.via.join(", ")})` : ""));
+
+      layers.ranges = g.append("g").selectAll("rect").data(graphData.nodes.filter(n => n.bhi > n.blo)).enter().append("rect")
+        .attr("class", "range").attr("height", 6).attr("rx", 3)
+        .style("fill", d => genColor(d.depth));
+
+      layers.nodes = g.append("g").selectAll("circle").data(graphData.nodes).enter().append("circle")
+        .attr("class", d => "node" + (d.quality === "unknown" ? " undated" : d.quality === "estimated" ? " estimated" : ""))
+        .attr("r", d => d.r)
+        .style("fill", d => genColor(d.depth))
+        .on("mouseover", handleNodeHover)
+        .on("mousemove", moveTooltip)
+        .on("mouseout", handleNodeOut)
+        .on("click", function(event, d) {
+          event.stopPropagation();
+          if (event.altKey) {
+            document.getElementById("startingEntity").value = d.id;
+            executeQuery();
+          } else {
+            window.open(`https://www.wikidata.org/wiki/${d.id}`, "_blank", "noopener");
+          }
+        });
+
+      layers.labels = g.append("g").selectAll("text").data(graphData.nodes).enter().append("text")
+        .attr("class", d => "label" + (d.depth === 0 ? " root" : ""))
+        .attr("text-anchor", d => (d.labelSide === "left" ? "end" : "middle"))
+        .attr("dy", d => (d.labelSide === "left" ? "0.35em" : null))
+        .text(d => d.shortLabel)
+        .each(d => { d.labelShown = true; });
+
+      // Axis, drawn above the network
+      layers.axis = svg.append("g").attr("class", "timeline-axis").attr("transform", `translate(0, ${plotHeight})`);
+      layers.axis.append("rect").attr("class", "axis-band").attr("width", width).attr("height", AXIS_HEIGHT);
+      layers.axis.append("line").attr("class", "axis-line").attr("x2", width);
+      layers.ticks = layers.axis.append("g");
+      layers.axis.append("text").attr("class", "axis-title").attr("x", width / 2).attr("y", 40)
+        .text(network && network.noDates ? "No date found: works are ordered by generation" :
+          "Year of inception or publication" + (timeScale.compressed ? " (the distant past is compressed)" : ""));
+
+      // Drag to move, pinch to zoom; the wheel is handled below.
+      zoom = d3.zoom()
+        .scaleExtent([0.2, 2000])
+        .filter(event => event.type !== "wheel" && event.type !== "dblclick" && !event.button)
+        .on("zoom", event => {
+          view.kx = event.transform.k; view.tx = event.transform.x; view.ty = event.transform.y;
+          scheduleRedraw();
+        });
+      svg.call(zoom);
+
+      svg.on("wheel", function(event) {
+        event.preventDefault();
+        const t = d3.zoomTransform(svg.node());
+        const [mouseX, mouseY] = d3.pointer(event);
+        const delta = event.deltaY * (event.deltaMode === 1 ? 30 : 1);
+        if (event.ctrlKey || event.metaKey) {
+          // Ctrl/Cmd + wheel (or pinch on a trackpad) = zoom the timeline around the pointer
+          const k = Math.min(2000, Math.max(0.2, t.k * Math.pow(2, -delta / 300)));
+          const x = mouseX - (mouseX - t.x) * (k / t.k);
+          svg.call(zoom.transform, d3.zoomIdentity.translate(x, t.y).scale(k));
+        } else if (event.shiftKey) {
+          // Shift + wheel = spread or tighten the rows around the pointer
+          const d = delta || event.deltaX;
+          const ky = Math.min(6, Math.max(0.05, view.ky * Math.pow(2, -d / 300)));
+          const center = plotHeight / 2;
+          const y = mouseY - center - (mouseY - center - t.y) * (ky / view.ky);
+          view.ky = ky;
+          svg.call(zoom.transform, d3.zoomIdentity.translate(t.x, y).scale(t.k));
+        } else {
+          // Regular wheel = vertical scroll (and horizontal scroll on a trackpad)
+          svg.call(zoom.transform, d3.zoomIdentity.translate(t.x - event.deltaX, t.y - delta * 1.5).scale(t.k));
+        }
+      }, { passive: false });
+
+      // Double-click = zoom in on the clicked date
+      svg.on("dblclick", function(event) {
+        const t = d3.zoomTransform(svg.node());
+        const [mouseX] = d3.pointer(event);
+        const k = Math.min(2000, t.k * 2);
+        const x = mouseX - (mouseX - t.x) * (k / t.k);
+        svg.transition().duration(400).call(zoom.transform, d3.zoomIdentity.translate(x, t.y).scale(k));
+      });
+
+      fitToContent(0);
+    }
+
+    function scheduleRedraw() {
+      if (redrawPending) return;
+      redrawPending = true;
+      requestAnimationFrame(() => { redrawPending = false; redraw(); });
+    }
+
+    function redraw() {
+      if (!layers.nodes) return;
+      const { kx, tx, ky, ty } = view;
+      const center = plotHeight / 2;
+      graphData.nodes.forEach(d => {
+        d.sx = tx + kx * d.bx;
+        d.sy = center + ty + ky * d.by;
+        // Where a label written on the left ends: before the node, or before its period bar when it is drawn
+        d.barShown = kx * (d.bhi - d.blo) > 2 * d.r + 8;
+        d.labelEnd = Math.min(d.sx - d.r, d.barShown ? tx + kx * d.blo : Infinity) - 4;
+      });
+
+      layers.links
+        .attr("x1", d => d.source.sx).attr("y1", d => d.source.sy)
+        .attr("x2", d => d.target.sx).attr("y2", d => d.target.sy);
+      layers.nodes.attr("cx", d => d.sx).attr("cy", d => d.sy);
+      layers.ranges
+        .attr("x", d => tx + kx * d.blo)
+        .attr("width", d => kx * (d.bhi - d.blo))
+        .attr("y", d => d.sy - 3)
+        .attr("display", d => (d.barShown ? null : "none"));
+      layers.labels
+        .attr("x", d => (d.labelSide === "left" ? d.labelEnd : d.sx))
+        .attr("y", d => (d.labelSide === "left" ? d.sy : d.sy - d.r - 4));
+
+      cullLabels();
+      drawAxis();
+    }
+
+    // Hides the labels that would overlap a work or a more important label.
+    // Occupied boxes are kept in a coarse grid, so that the test stays fast on large networks.
+    function cullLabels() {
+      const CELL = 96, grid = new Map();
+      const eachCell = (box, visit) => {
+        for (let cx = Math.floor(box[0] / CELL); cx <= Math.floor(box[2] / CELL); cx++) {
+          for (let cy = Math.floor(box[1] / CELL); cy <= Math.floor(box[3] / CELL); cy++) {
+            if (visit(cx * 8192 + cy)) return true;
+          }
+        }
+        return false;
+      };
+      const occupy = box => eachCell(box, key => { (grid.get(key) || grid.set(key, []).get(key)).push(box); });
+      const isTaken = box => eachCell(box, key =>
+        (grid.get(key) || []).some(o => box[0] < o[2] && box[2] > o[0] && box[1] < o[3] && box[3] > o[1]));
+      const onScreen = d => d.sx > -200 && d.sx < width + 200 && d.sy > -40 && d.sy < plotHeight + 40;
+
+      network.labelOrder.forEach(d => { if (onScreen(d)) occupy([d.sx - d.r, d.sy - d.r, d.sx + d.r, d.sy + d.r]); });
+      network.labelOrder.forEach(d => {
+        const box = d.labelSide === "left"
+          ? [d.labelEnd - d.labelWidth, d.sy - 6, d.labelEnd + 2, d.sy + 6]
+          : [d.sx - d.labelWidth / 2, d.sy - d.r - 15, d.sx + d.labelWidth / 2, d.sy - d.r - 2];
+        // The starting work is always named.
+        d.labelShow = onScreen(d) && (d.depth === 0 || !isTaken(box));
+        if (d.labelShow) occupy(box);
+      });
+      layers.labels.each(function(d) {
+        if (d.labelShow !== d.labelShown) {
+          d.labelShown = d.labelShow;
+          this.style.display = d.labelShow ? "" : "none";
+        }
+      });
+    }
+
+    /* ----- Axis: round years first, finer ticks where there is room, BCE aware ----- */
+
+    function computeTicks() {
+      const toScreen = year => view.tx + view.kx * timeScale.toPx(year);
+      const toYear = px => timeScale.toYear((px - view.tx) / view.kx);
+      let from = toYear(0), to = toYear(width);
+      if (!Number.isFinite(from)) from = timeScale.y0;
+      if (!Number.isFinite(to)) to = timeScale.y1;
+      if (from > to) [from, to] = [to, from];
+      const hasBCE = from <= 0;
+      // "Historical" numbering has no year zero: ... -2 = 2 BCE, -1 = 1 BCE, 1 = 1 CE ...
+      const toHistorical = astronomical => (astronomical <= 0 ? astronomical - 1 : astronomical);
+      const toAstronomical = historical => (historical < 0 ? historical + 1 : historical);
+      const minGap = 58;
+      const ticks = [];
+      // A tick is drawn when the ticks of its level have enough room around it. Each level
+      // divides the previous one, so the result stays regular; with the compressed scale,
+      // finer levels appear progressively toward the recent years.
+      const tryTick = (year, step, label) => {
+        const px = toScreen(year);
+        if (px < 28 || px > width - 28) return;
+        if (toScreen(year + step) - px < minGap || px - toScreen(year - step) < minGap) return;
+        if (ticks.some(t => Math.abs(t.px - px) < minGap * 0.9)) return;
+        ticks.push({ px, label });
+      };
+      const h0 = toHistorical(Math.floor(from)), h1 = toHistorical(Math.ceil(to));
+      [1000000, 100000, 10000, 5000, 1000, 500, 100, 50, 10, 5, 1].forEach(step => {
+        if ((h1 - h0) / step > 600) return;
+        for (let h = Math.ceil(h0 / step) * step; h <= h1; h += step) {
+          if (h === 0) continue;
+          tryTick(toAstronomical(h), step, h < 0 ? `${-h} BCE` : (hasBCE && h < 1000 ? `${h} CE` : String(h)));
+        }
+      });
+      if (to - from < 12) {
+        for (let y = Math.max(1, Math.floor(from)); y <= to; y++) {
+          for (let m = 1; m < 12; m++) tryTick(y + m / 12, 1 / 12, `${MONTHS[m]} ${y}`);
+        }
+      }
+      return ticks;
+    }
+
+    function drawAxis() {
+      const ticks = network.noDates ? [] : computeTicks();
+      const tick = layers.ticks.selectAll("g.tick").data(ticks);
+      tick.exit().remove();
+      const entered = tick.enter().append("g").attr("class", "tick");
+      entered.append("line").attr("y2", 6);
+      entered.append("text").attr("y", 20);
+      const all = entered.merge(tick).attr("transform", d => `translate(${d.px},0)`);
+      all.select("text").text(d => d.label);
+
+      const grid = layers.grid.selectAll("line").data(ticks);
+      grid.exit().remove();
+      grid.enter().append("line").attr("class", "gridline").merge(grid)
+        .attr("x1", d => d.px).attr("x2", d => d.px).attr("y1", 0).attr("y2", plotHeight);
+    }
+
+    /* =====================================================================
+       INTERACTIONS
+       ===================================================================== */
+
+    const escapeHtml = text => String(text).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+    function dateText(d) {
+      if (!d.date) return "unknown (placed before the works citing it)";
+      return d.date.label + (d.date.quality === "estimated" ? ` (estimated: ${d.date.source})` : ` (${d.date.source})`);
+    }
+
+    function handleNodeHover(event, d) {
+      const authors = d.authors.length > 3 ? d.authors.slice(0, 3).join(", ") + ` and ${d.authors.length - 3} more` : d.authors.join(", ");
+      const tooltip = document.getElementById("tooltip");
+      tooltip.innerHTML = `
+        <strong>${escapeHtml(d.label)}</strong><br>
+        ${authors ? escapeHtml(authors) + "<br>" : ""}
+        Date: ${escapeHtml(dateText(d))}<br>
+        ${d.depth === 0 ? "Starting work" : "Generation " + d.depth} · cites ${d.outDeg} · cited by ${d.inDeg} in this network<br>
+        ${d.members.size ? `${d.members.size} edition${d.members.size > 1 ? "s or translations" : " or translation"} grouped<br>` : ""}
+        <span class="muted">${d.id}</span>
+      `;
+      tooltip.style.opacity = "1";
+      moveTooltip(event);
+
+      // Highlight the work, its links and its neighbours
+      const related = new Set([d]);
+      layers.links.classed("hover", l => {
+        const hit = l.source === d || l.target === d;
+        if (hit) { related.add(l.source); related.add(l.target); }
+        return hit;
+      });
+      layers.nodes.classed("hover", n => related.has(n));
+      layers.labels.classed("hover", n => related.has(n));
+      layers.plot.classed("dimmed", true);
+    }
+
+    function moveTooltip(event) {
+      const tooltip = document.getElementById("tooltip");
+      const overflow = event.clientX + 360 > window.innerWidth;
+      tooltip.style.left = (overflow ? event.pageX - tooltip.offsetWidth - 12 : event.pageX + 12) + "px";
+      tooltip.style.top = (event.pageY + 12) + "px";
+    }
+
+    function handleNodeOut() {
+      document.getElementById("tooltip").style.opacity = "0";
+      layers.plot.classed("dimmed", false);
+      layers.links.classed("hover", false);
+      layers.nodes.classed("hover", false);
+      layers.labels.classed("hover", false);
+    }
+
+    function setView(kx, tx, ty, ky, duration) {
+      if (!svg) return;
+      if (ky != null) view.ky = ky;
+      const target = d3.zoomIdentity.translate(tx, ty).scale(kx);
+      if (duration) svg.transition().duration(duration).call(zoom.transform, target);
+      else svg.call(zoom.transform, target);
+      scheduleRedraw();
+    }
+
+    function zoomBy(factor) {
+      if (!svg) return;
+      const t = d3.zoomTransform(svg.node());
+      const k = Math.min(2000, Math.max(0.2, t.k * factor));
+      setView(k, width / 2 - (width / 2 - t.x) * (k / t.k), t.y, null, 300);
+    }
+    function zoomIn() { zoomBy(3); }       // aggressive zoom for timeline focus
+    function zoomOut() { zoomBy(1 / 3); }
+
+    // Zooms the timeline on [fromPx, toPx] (base pixels), keeping the vertical position.
+    function zoomToSpan(fromPx, toPx, duration) {
+      const padLeft = 110, padRight = 130;
+      const k = Math.min(2000, Math.max(100, width - padLeft - padRight) / Math.max(toPx - fromPx, 1));
+      setView(k, padLeft - k * fromPx, d3.zoomTransform(svg.node()).y, null, duration);
+    }
+
+    function getMostCitingDocuments() {
+      if (citationCounts.size === 0) return null;
+      // Works that cite the most (top 30%)
+      const sorted = Array.from(citationCounts.entries()).sort((a, b) => b[1] - a[1]);
+      const top = new Set(sorted.slice(0, Math.max(1, Math.ceil(sorted.length * 0.3))).map(d => d[0]));
+      const positions = graphData.nodes.filter(n => top.has(n.id)).map(n => n.bx);
+      return positions.length ? d3.extent(positions) : null;
+    }
+
+    function zoomToMostMentioned() {
+      if (!svg) return;
+      const range = getMostCitingDocuments();
+      if (!range) return;
+      const padding = Math.max(40, (range[1] - range[0]) * 0.2);
+      zoomToSpan(range[0] - padding, range[1] + padding, 1000);
+    }
+
+    function resetZoom() {
+      if (!svg) return;
+      setView(1, 0, 0, 1, 750);
+    }
+
+    // The base layout already spreads the whole period over the width (labels included):
+    // fitting everything only needs to adjust the rows to the height.
+    function fitToContent(duration = 750) {
+      if (!svg || !graphData.nodes.length) return;
+      const [y0, y1] = d3.extent(graphData.nodes, n => n.by);
+      const ky = Math.min(1.5, Math.max(0.05, (plotHeight - 70) / Math.max(y1 - y0, 1)));
+      setView(1, 0, -ky * (y0 + y1) / 2 + 8, ky, duration);
+    }
+
+    function changeTimeScale() {
+      if (!network || !graphData.nodes.length) return;
+      renderGraph();
+      updateStats();
+    }
+
+    /* =====================================================================
+       STATUS, STATISTICS, LEGEND, TABLE
+       ===================================================================== */
+
+    function showStatus(message, type) {
+      const status = document.getElementById("status");
+      status.textContent = message;
+      status.style.color = type === "error" ? "#dc3545" : type === "success" ? "#1e7e34" : "#6c757d";
+      status.style.background = type === "error" ? "#f8d7da" : type === "success" ? "#d4edda" : "#f1f3f4";
+    }
+
+    function updateStats() {
+      const nodes = graphData.nodes, links = graphData.links;
+      const count = q => nodes.filter(n => n.quality === q).length;
+      const dated = nodes.filter(n => n.date);
+      const range = dated.length ? `${formatYear(d3.min(dated, n => n.date.x))} – ${formatYear(d3.max(dated, n => n.date.x))}` : "No dates";
+      const editions = d3.sum(nodes, n => n.members.size);
+      const anachronisms = links.filter(l => l.source.date && l.target.date && l.target.date.lo > l.source.date.hi + 1).length;
+      const parts = [
+        `Works: ${nodes.length}`,
+        `Links: ${links.length} (${links.filter(l => l.strength === "strong").length} solid, ${links.filter(l => l.strength === "weak").length} dotted)`,
+        `Dates: ${count("recorded")} recorded, ${count("estimated")} estimated, ${count("unknown")} unknown`,
+        `Date Range: ${range}`,
+        `Editions and translations grouped: ${editions}`
+      ];
+      if (network.skipped) parts.push(`Not works, ignored: ${network.skipped}`);
+      if (network.notShown) parts.push(`Left out by « Max works »: ${network.notShown}`);
+      if (anachronisms) parts.push(`Links to a later work: ${anachronisms}`);
+      document.getElementById("stats").innerHTML = parts.map(p => `<span>${escapeHtml(p)}</span>`).join("");
+    }
+
+    function updateLegend() {
+      const maxDepth = d3.max(graphData.nodes, n => n.depth) || 0;
+      const dot = (style, cls) => `<svg width="14" height="14" aria-hidden="true"><circle cx="7" cy="7" r="5" class="node ${cls || ""}" style="${style}"/></svg>`;
+      const items = [`<span>${dot("fill:var(--gen-0)")}starting work</span>`];
+      for (let d = 1; d <= Math.min(maxDepth, 5); d++) {
+        items.push(`<span>${dot(`fill:var(--gen-${d})`)}generation ${d}${d === 5 && maxDepth > 5 ? "+" : ""}</span>`);
+      }
+      items.push('<span class="sep"></span>');
+      items.push(`<span>${dot("fill:var(--gen-3)", "estimated")}estimated date</span>`);
+      items.push(`<span>${dot("", "undated")}unknown date</span>`);
+      items.push('<span><svg width="26" height="8" aria-hidden="true"><rect x="1" y="1" width="24" height="6" rx="3" class="range" style="fill:var(--gen-2)"/></svg>imprecise date (decade, century…)</span>');
+      items.push('<span class="sep"></span>');
+      items.push('<span><svg width="22" height="8" aria-hidden="true"><line x1="1" y1="4" x2="21" y2="4" class="link strong"/></svg>cites work, acknowledged</span>');
+      items.push('<span><svg width="22" height="8" aria-hidden="true"><line x1="1" y1="4" x2="21" y2="4" class="link weak"/></svg>inspired by, based on</span>');
+      items.push("<span>Size: times cited in this network</span>");
+      document.getElementById("legend").innerHTML = items.join("");
+    }
+
+    function updateTable() {
+      const rows = graphData.nodes.slice().sort((a, b) => a.year - b.year).map(n => `
+        <tr>
+          <td>${escapeHtml(n.date ? n.date.label : "unknown")}${n.quality === "estimated" ? " (est.)" : ""}</td>
+          <td><a href="https://www.wikidata.org/wiki/${n.id}" target="_blank" rel="noopener">${escapeHtml(n.label)}</a></td>
+          <td>${escapeHtml(n.authors.slice(0, 3).join(", "))}${n.authors.length > 3 ? " et al." : ""}</td>
+          <td class="num">${n.depth}</td>
+          <td class="num">${n.outDeg}</td>
+          <td class="num">${n.inDeg}</td>
+          <td class="num">${n.members.size || ""}</td>
+        </tr>`);
+      document.getElementById("worksTable").innerHTML =
+        "<thead><tr><th>Date</th><th>Work</th><th>Authors</th><th>Generation</th><th>Cites</th><th>Cited by</th><th>Editions grouped</th></tr></thead><tbody>" +
+        rows.join("") + "</tbody>";
+    }
+
+    /* =====================================================================
+       RUN
+       ===================================================================== */
+
+    function readOptions() {
+      const match = /Q\d+/i.exec(document.getElementById("startingEntity").value);
+      if (!match) throw new Error("Enter a Wikidata item identifier, e.g. Q55867220.");
+      const props = Object.keys(LINK_TYPES).filter(p => document.getElementById("prop-" + p).checked);
+      if (!props.length) throw new Error("Select at least one kind of link.");
+      const clamp = (id, lo, hi, fallback) => {
+        const v = parseInt(document.getElementById(id).value, 10);
+        return Math.min(hi, Math.max(lo, Number.isFinite(v) ? v : fallback));
+      };
+      return {
+        start: match[0].toUpperCase(),
+        props,
+        maxDepth: clamp("maxDepth", 1, 10, 4),
+        maxNodes: clamp("maxNodes", 10, 3000, 300)
+      };
+    }
+
+    async function executeQuery() {
+      if (currentRun) currentRun.abort();
+      const run = new AbortController();
+      currentRun = run;
+      try {
+        const options = readOptions();
+        document.getElementById("startingEntity").value = options.start;
+        showStatus("Querying QLever endpoint...", "loading");
+        const started = performance.now();
+
+        onThrottle = () => showStatus("QLever asks to slow down: waiting a few seconds before going on…", "loading");
+        const net = await crawl({ ...options, signal: run.signal, onProgress: message => showStatus(message, "loading") });
+        if (net.links.size === 0) {
+          showStatus(`No backward link found from ${options.start} with the selected kinds of links. Try a different work.`, "error");
+          return;
+        }
+        showStatus(`Reading the titles, dates and authors of ${net.nodes.size} works…`, "loading");
+        await loadMetadata(net, run.signal);
+        if (run.signal.aborted) return;
+
+        network = net;
+        buildGraph(net);
+        renderGraph();
+        updateStats();
+        updateLegend();
+        updateTable();
+        saveOptionsToUrl(options);
+
+        const seconds = ((performance.now() - started) / 1000).toFixed(1);
+        showStatus(`Successfully loaded ${graphData.nodes.length} works and ${graphData.links.length} links over ${net.depthReached} generation${net.depthReached > 1 ? "s" : ""} in ${seconds} s` +
+          (net.rootId !== net.start ? ` — ${net.start} is an edition or translation: started from its work ${net.rootId}` : "") +
+          (net.notShown ? ` — ${net.notShown} more works were left out (raise « Max works » to see them)` : ""), "success");
+      } catch (error) {
+        if (error.name === "AbortError") return;
+        console.error("Query failed:", error);
+        showStatus(`Query failed: ${error.message}`, "error");
+      } finally {
+        if (currentRun === run) currentRun = null;
+      }
+    }
+
+    // The options are kept in the address, so that a network can be shared as a link.
+    function saveOptionsToUrl(options) {
+      try {
+        const params = new URLSearchParams({
+          q: options.start, links: options.props.join("-"), depth: options.maxDepth, max: options.maxNodes,
+          scale: document.getElementById("timeScale").value
+        });
+        history.replaceState(null, "", location.pathname + "?" + params);
+      } catch (error) { /* file:// pages may refuse it */ }
+    }
+
+    function loadOptionsFromUrl() {
+      const params = new URLSearchParams(location.search);
+      if (/^Q\d+$/i.test(params.get("q") || "")) document.getElementById("startingEntity").value = params.get("q").toUpperCase();
+      if (params.get("links")) {
+        const wanted = params.get("links").split("-");
+        Object.keys(LINK_TYPES).forEach(p => { document.getElementById("prop-" + p).checked = wanted.includes(p); });
+      }
+      if (/^\d+$/.test(params.get("depth") || "")) document.getElementById("maxDepth").value = params.get("depth");
+      if (/^\d+$/.test(params.get("max") || "")) document.getElementById("maxNodes").value = params.get("max");
+      if (["auto", "linear", "log"].includes(params.get("scale"))) document.getElementById("timeScale").value = params.get("scale");
+    }
+
+    let resizeTimer = null;
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (network && graphData.nodes.length && svg && svg.node().clientWidth !== width) renderGraph();
+      }, 200);
+    });
+
+    document.getElementById("startingEntity").addEventListener("keydown", event => {
+      if (event.key === "Enter") executeQuery();
+    });
+
+    // Initialize with example query
+    window.addEventListener("load", () => {
+      if (!window.d3) {
+        showStatus("The D3 library could not be loaded: put d3.v7.min.js next to this file.", "error");
+        return;
+      }
+      loadOptionsFromUrl();
+      executeQuery();
+    });
+  </script>
+</body>
+</html>
