@@ -1,1038 +1,641 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TTRPG Citation Timeline</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            color: #333;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TTRPG Citation Timeline</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<style>
+    :root {
+        --bg: #f4f5f7; --panel: #ffffff; --line: #d9dde3; --text: #1f2933; --muted: #6b7684;
+        --accent: #f59e0b; --node: #5b6b7f;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+        margin: 0; background: var(--bg); color: var(--text);
+        font: 12px/1.35 system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        display: flex; flex-direction: column; min-height: 100vh;
+    }
 
-        .container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            max-width: 1400px;
-            margin: 0 auto;
-        }
+    /* ---------- compact top menu ---------- */
+    header {
+        background: var(--panel); border-bottom: 1px solid var(--line);
+        padding: 5px 10px; display: flex; flex-direction: column; gap: 4px;
+    }
+    .bar { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+    h1 { font-size: 13px; margin: 0 6px 0 0; font-weight: 650; white-space: nowrap; }
+    .bar label { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; color: var(--muted); }
+    .bar label.chk { color: var(--text); cursor: pointer; gap: 3px; }
+    .grp { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 2px 9px; }
+    .grp > b { font-weight: 600; color: var(--muted); margin-right: 1px; }
+    .sep { width: 1px; align-self: stretch; background: var(--line); margin: 0 2px; }
+    input, select, button { font: inherit; color: inherit; }
+    input[type=text], input[type=number], select {
+        height: 24px; padding: 0 6px; border: 1px solid var(--line); border-radius: 4px; background: #fff;
+    }
+    input[type=text] { width: 104px; }
+    input[type=number] { width: 46px; }
+    input:focus, select:focus, button:focus-visible { outline: 2px solid #93b4f5; outline-offset: 0; }
+    input[type=checkbox] { margin: 0; width: 13px; height: 13px; }
+    button {
+        height: 24px; padding: 0 9px; border: 1px solid var(--line); border-radius: 4px;
+        background: #fff; cursor: pointer;
+    }
+    button:hover:not(:disabled) { background: #eef1f5; }
+    button:disabled { opacity: .45; cursor: default; }
+    button.primary { background: #1f2933; border-color: #1f2933; color: #fff; }
+    button.primary:hover:not(:disabled) { background: #36424f; }
+    .swatch { width: 24px; height: 8px; flex: none; }
+    #status { margin-left: auto; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+    #status.error { color: #b42318; }
+    #status.loading { color: #1d4ed8; }
 
-        h1 {
-            text-align: center;
-            color: #2c3e50;
-            font-size: 2.5em;
-            margin-bottom: 30px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-        }
+    /* ---------- graph ---------- */
+    #graph { flex: 1 1 auto; min-height: 420px; position: relative; background: #fbfcfd; overflow: hidden; }
+    #graph svg { display: block; width: 100%; height: 100%; cursor: grab; }
+    #graph svg:active { cursor: grabbing; }
+    .grid line { stroke: #e6e9ee; }
+    .grid line.major { stroke: #d3d8df; }
+    .axis-bg { fill: #ffffff; }
+    .axis-line { stroke: #b8c0ca; }
+    .axis text { fill: var(--muted); font-size: 11px; text-anchor: middle; }
+    .axis text.major { fill: var(--text); font-weight: 600; }
 
-        .controls {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            align-items: center;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
+    .link { fill: none; stroke-linecap: round; transition: opacity .12s; }
+    .link-hit { fill: none; stroke: transparent; stroke-width: 9; cursor: help; }
+    .node { cursor: pointer; transition: opacity .12s; }
+    .node circle { fill: var(--node); stroke: #fff; stroke-width: 1.5; }
+    .node.fwd circle { fill: #fff; stroke: var(--node); stroke-width: 2; }
+    .node.root circle { fill: var(--accent); stroke: #1f2933; stroke-width: 2; }
+    .node.nodate circle { stroke-dasharray: 2 2; }
+    .node text {
+        font-size: 11px; text-anchor: middle; fill: var(--text); pointer-events: none;
+        paint-order: stroke; stroke: #fbfcfd; stroke-width: 3.5px; stroke-linejoin: round;
+    }
+    .node.root text { font-weight: 700; font-size: 12px; }
+    .node:hover circle { stroke: #1f2933; }
+    .dim { opacity: .12; }
 
-        .advanced-controls {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
+    .legend {
+        position: absolute; left: 8px; top: 6px; display: flex; gap: 10px; align-items: center;
+        background: rgba(255,255,255,.85); border: 1px solid var(--line); border-radius: 4px;
+        padding: 2px 7px; font-size: 11px; color: var(--muted); pointer-events: none;
+    }
+    .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; vertical-align: -1px; margin-right: 3px; }
+    .empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 13px; pointer-events: none; }
 
-        .control-group {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-            align-items: flex-start;
-            flex-wrap: wrap;
-        }
+    .tooltip {
+        position: fixed; z-index: 10; pointer-events: none; opacity: 0; max-width: 280px;
+        background: #1f2933; color: #fff; padding: 6px 8px; border-radius: 5px; font-size: 11.5px;
+        box-shadow: 0 4px 14px rgba(0,0,0,.2);
+    }
+    .tooltip small { color: #b8c2cf; }
 
-        .control-group:last-child {
-            margin-bottom: 0;
-        }
-
-        .control-group label {
-            font-weight: bold;
-            min-width: 120px;
-            color: #555;
-            margin-top: 12px;
-        }
-
-        input[type="text"] {
-            padding: 12px 20px;
-            border: 2px solid #ddd;
-            border-radius: 25px;
-            font-size: 16px;
-            width: 200px;
-            transition: all 0.3s ease;
-        }
-
-        input[type="text"]:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 15px rgba(102, 126, 234, 0.3);
-        }
-
-        .property-input {
-            width: 80px;
-        }
-
-        textarea {
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            font-size: 14px;
-            width: 350px;
-            font-family: monospace;
-            resize: vertical;
-            transition: all 0.3s ease;
-        }
-
-        textarea:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 15px rgba(102, 126, 234, 0.3);
-        }
-
-        button {
-            padding: 12px 25px;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-        }
-
-        button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .preset-btn {
-            padding: 6px 12px;
-            font-size: 12px;
-            margin-left: 10px;
-        }
-
-        .status {
-            text-align: center;
-            margin: 20px 0;
-            padding: 10px;
-            border-radius: 10px;
-            min-height: 20px;
-        }
-
-        .status.loading {
-            background: #e3f2fd;
-            color: #1976d2;
-        }
-
-        .status.error {
-            background: #ffebee;
-            color: #c62828;
-        }
-
-        .status.success {
-            background: #e8f5e8;
-            color: #2e7d32;
-        }
-
-        #network-container {
-            width: 100%;
-            height: 800px;
-            border: 2px solid #ddd;
-            border-radius: 15px;
-            overflow: hidden;
-            background: #fafafa;
-            position: relative;
-        }
-
-        .node {
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .node circle {
-            stroke: #fff;
-            stroke-width: 2px;
-        }
-
-        .node text {
-            font-size: 11px;
-            font-family: 'Segoe UI', sans-serif;
-            text-anchor: middle;
-            pointer-events: none;
-        }
-
-        .link {
-            stroke: #999;
-            stroke-opacity: 0.6;
-            stroke-width: 1px;
-            fill: none;
-        }
-
-        .link.highlighted {
-            stroke: #ff6b35;
-            stroke-opacity: 0.8;
-            stroke-width: 2px;
-        }
-
-        .link.backward-citation {
-            stroke: #ff6b35;
-            stroke-opacity: 0.8;
-        }
-
-        .tooltip {
-            position: absolute;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 12px;
-            pointer-events: none;
-            z-index: 1000;
-            max-width: 250px;
-            word-wrap: break-word;
-        }
-
-        .legend {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            font-size: 14px;
-        }
-
-        .legend-item {
-            display: inline-flex;
-            align-items: center;
-            margin-right: 20px;
-            margin-bottom: 5px;
-        }
-
-        .legend-color {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            margin-right: 8px;
-        }
-
-        .stats {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin-top: 15px;
-            font-size: 14px;
-            color: #666;
-            flex-wrap: wrap;
-        }
-
-        .layout-controls {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .toggle-btn {
-            padding: 8px 16px;
-            border: 2px solid #667eea;
-            border-radius: 20px;
-            background: white;
-            color: #667eea;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .toggle-btn.active {
-            background: #667eea;
-            color: white;
-        }
-
-        .timeline-axis {
-            stroke: #666;
-            stroke-width: 2;
-        }
-
-        .timeline-tick {
-            stroke: #999;
-            stroke-width: 1;
-        }
-
-        .timeline-label {
-            font-size: 12px;
-            fill: #666;
-            text-anchor: middle;
-        }
-
-        .decade-separator {
-            stroke: #ddd;
-            stroke-width: 1;
-            stroke-dasharray: 3,3;
-        }
-
-        .help-text {
-            font-size: 12px;
-            color: #666;
-            margin-left: 10px;
-            font-style: italic;
-            flex: 1;
-        }
-    </style>
+    details { background: var(--panel); border-top: 1px solid var(--line); padding: 4px 10px; color: var(--muted); }
+    details summary { cursor: pointer; }
+    details p { max-width: 95ch; margin: 6px 0; }
+    a { color: #1d4ed8; }
+</style>
 </head>
 <body>
-<div class="container">
+
+<header>
+    <div class="bar">
         <h1>TTRPG Timelined Citation Network</h1>
-        
-        <p>This in-browser script retrieves and displays on a timeline all the backward citation network of a starting tabletop role-playing game element. By default, discover how <i>Apocalypse World 1st edition</i> by Vincent D. Baker and Meguey Baker is acknowledging inspirations, tributes, hommages, etc. within its rules. 
-        </p>
-        
-            <div class="control-group">
-                <label>Quick presets:</label>
-				<button class="preset-btn" onclick="setPreset('apocalypseworld')">Apocalypse World 1st ed.</button>
-				<button class="preset-btn" onclick="setPreset('runequest')">Runequest (misc. editions)</button>
-				<button class="preset-btn" onclick="setPreset('dndholmes')">D&D Holmes</button>
-				<button class="preset-btn" onclick="setPreset('dnd5')">D&D 5th ed.</button>
-            </div>
-            <div class="control-group">
-                <label>Relation Property:</label>
-                <input type="text" id="citation-property" class="property-input" value="P2860" placeholder="P2860">
-                <span class="help-text">Choose a Wikidata Property for relations (default: P2860 "cites work")</span>
-
-                <label>Only retrieve this Types:</label>
-                <textarea id="filter-types" rows="3" placeholder="Q1643932, Q2164067, Q1472433">Q1643932, Q2164067, Q1472433</textarea>
-                <span class="help-text">Instance of (P31) entity types to include as QIDs separated by comma, space, or line breaks (default : TTRPG, TTRPG systems, TTRPG theory).</span>
-            </div>
-            
-
-
-            <div class="control-group">
-                <label>Starting QID of a TTRPG:</label>
-                <input type="text" id="qid-input" placeholder="Enter starting QID" value="Q112134730">
-                <span class="help-text">(Root of the network to build)</span>
-                <label>Depth of crawling:</label>
-                <input type="number" id="max-depth" placeholder="Max depth" min="1" max="15" value="2">
-                <button onclick="buildNetwork()">🔍 Build Network</button>
-                <button onclick="clearNetwork()">🧹 Clear</button>
-            </div>
-
-        <div id="status" class="status"></div>
-
-        <div class="layout-controls">
-            <button class="toggle-btn active" id="timeline-btn" onclick="setLayout('timeline')">📅 Timeline Layout</button>
-            <button class="toggle-btn" id="force-btn" onclick="setLayout('force')">🕸️ Force Layout</button>
-        </div>
-
-
-        
-        <div id="network-container"></div>
-        
-        <div class="legend">
-            <div class="legend-item">
-                <div class="legend-color" style="background: #4a90e2;"></div>
-                <span>Root Node</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background: #7ed321;"></div>
-                <span>Low Citations (1-2)</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background: #f5a623;"></div>
-                <span>Medium Citations (3-5)</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background: #ff6b35;"></div>
-                <span>High Citations (6+)</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background: #d0021b;"></div>
-                <span>Error/No Date</span>
-            </div>
-        </div>
-
-        <div class="stats">
-            <div id="total-nodes">Total Nodes: 0</div>
-            <div id="total-links">Total Links: 0</div>
-            <div id="max-depth-reached">Max Depth: 0</div>
-            <div id="most-cited">Most Cited: -</div>
-            <div id="date-range">Date Range: -</div>
-        </div>
-		<p></p>
-		<p>The data is retrieved from Wikidata using customizable properties and entity types. Use the presets 
-		for common configurations or customize your own. Toggle between Timeline Layout (chronological positioning) 
-		and Force Layout (network physics). <br>
-		Citations flowing backwards in time are highlighted in orange. Citations flowing onward are colored grey and they are a bug in the data. Indeed, some TTRPGs list citations for all their editions combined, while others only include citations for specific editions (which can sometimes lead to references pointing to works published later). Contributions to improve this data on Wikidata are always welcome. Ideally, citations should be indexed at the edition level rather than merging all citations under a single element—a mistake I made early in the project and have been working to correct ever since. Single edition games are the easiest to index since I consider them as one element only.</p>
-		<p>This tool is based on <a href="https://www.citationtree.org/">CitationTree</a> by Nicolas Loizeau, and <a href="https://www.entitree.com/">EntiTree</a> by Orlando Groppo & Martin Schibel.<br>
-		The JavaScript code can be (quite) easily adapted to other needs. If you do so, thank you for citing with something like this : 
-		Martinolli, Pascal. 2025. TTRPG Timelined Citation Network ». JavaScript and Wikidata. 
-		Part of <i><a href="https://pmartinolli.github.io/#tabletop-role-playing-games-studies">On the Shoulders of Cloud Giants</a></i> project. </p>
-		
+        <select id="preset" title="Quick presets" aria-label="Quick presets">
+            <option value="">Presets…</option>
+            <option value="Q112134730">Apocalypse World 1st ed.</option>
+            <option value="Q681338">RuneQuest (misc. editions)</option>
+            <option value="Q64596999">D&amp;D Holmes</option>
+            <option value="Q64706124">D&amp;D 5th ed.</option>
+        </select>
+        <label>Start QID <input type="text" id="qid-input" value="Q112134730" placeholder="Q…" spellcheck="false"></label>
+        <label title="Number of steps crawled backward (earlier works) and onward (later works)">Depth
+            <input type="number" id="max-depth" min="1" max="8" value="2"></label>
+        <label title="Maximum number of neighbours kept per work at each step">Max/work
+            <input type="number" id="max-per" min="1" max="200" value="30"></label>
+        <button class="primary" id="build-btn">Build</button>
+        <button id="back-btn" disabled title="Previous graph">← Back</button>
+        <button id="fit-btn" title="Fit the graph in the window">Fit</button>
+        <span id="status"></span>
     </div>
+    <div class="bar">
+        <span class="grp" id="relations"><b>Relations</b></span>
+        <span class="sep"></span>
+        <span class="grp" id="types"><b>Types</b></span>
+    </div>
+</header>
 
-    <script>
-        let networkData = { nodes: [], links: [] };
-        let svg = null;
-        let simulation = null;
-        let tooltip = null;
-        let nodeMap = new Map();
-        let rootQID = null;
-        let currentLayout = 'timeline';
-        let timeScale = null;
+<div id="graph">
+    <div class="legend">
+        <span><i style="background:#f59e0b;border:1.5px solid #1f2933"></i>centre</span>
+        <span><i style="background:#5b6b7f"></i>earlier works (backward)</span>
+        <span><i style="background:#fff;border:2px solid #5b6b7f"></i>later works (onward)</span>
+        <span><i style="background:#dc2626;border-radius:0;height:2px;width:14px;vertical-align:3px"></i>points to a later work</span>
+    </div>
+    <div class="empty" id="empty">Choose a preset or enter a QID, then Build.</div>
+</div>
 
-        // Set preset configurations
-        function setPreset(type) {
-            switch(type) {
-                case 'apocalypseworld':
-                    document.getElementById('qid-input').value = 'Q112134730';
-                    document.getElementById('citation-property').value = 'P2860';
-                    document.getElementById('filter-types').value = 'Q1643932, Q2164067, Q1472433';
-                    break;
-                case 'runequest':
-                    document.getElementById('qid-input').value = 'Q681338';
-                    document.getElementById('citation-property').value = 'P2860';
-                    document.getElementById('filter-types').value = 'Q1643932, Q2164067, Q1472433';
-                    break;
-                case 'dndholmes':
-                    document.getElementById('qid-input').value = 'Q64596999';
-                    document.getElementById('citation-property').value = 'P2860'; 
-                    document.getElementById('filter-types').value = 'Q1643932, Q2164067, Q1472433';
-                    break;
-                case 'dnd5':
-                    document.getElementById('qid-input').value = 'Q64706124';
-                    document.getElementById('citation-property').value = 'P2860';
-                    document.getElementById('filter-types').value = 'Q1643932, Q2164067, Q1472433'; 
-                    break;
-            }
-            updateStatus(`Applied ${type} preset configuration`, 'success');
+<details>
+    <summary>About this tool</summary>
+    <p>This in-browser script retrieves from Wikidata the network around a starting tabletop role-playing game element
+        and draws it on a timeline. It crawls <b>backward</b> (the works the element cites, follows, is based on, is inspired by or
+        acknowledges) and <b>onward</b> (the works that cite, follow, are based on, are inspired by or acknowledge it).
+        Click a work to build a new graph centred on it; Ctrl/⌘+click opens its Wikidata page. Drag to pan, scroll to zoom.</p>
+    <p>Line styles show the strength of the relation: plain for <i>follows / followed by</i>, dashed for <i>cites work / acknowledged</i>,
+        dotted for <i>based on / inspired by</i>. Arrows point to the referenced work. A link drawn in red points to a work published
+        later than the one referring to it; for citations this is usually a data issue: some TTRPGs list citations for all their editions
+        combined, while others only include citations for specific editions. Contributions to improve this data on Wikidata are always
+        welcome. Ideally, citations should be indexed at the edition level.</p>
+    <p>This tool is based on <a href="https://www.citationtree.org/">CitationTree</a> by Nicolas Loizeau, and
+        <a href="https://www.entitree.com/">EntiTree</a> by Orlando Groppo &amp; Martin Schibel. The JavaScript code can be (quite) easily
+        adapted to other needs. If you do so, thank you for citing with something like this: Martinolli, Pascal. 2025.
+        « TTRPG Timelined Citation Network ». JavaScript and Wikidata. Part of
+        <i><a href="https://pmartinolli.github.io/#tabletop-role-playing-games-studies">On the Shoulders of Cloud Giants</a></i> project.</p>
+</details>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+/* =====================================================================
+   Configuration: edit these two lists to adapt the tool to other needs
+   ===================================================================== */
+
+// level 1 = strongest (plain line), 2 = dashed, 3 = dotted.
+// `inverse` is a property stating the same relation in the other direction.
+const RELATIONS = [
+    { key: 'follows',  label: 'follows / followed by', verb: 'follows',         prop: 'P155', inverse: 'P156', level: 1, color: '#1f2933', on: true },
+    { key: 'cites',    label: 'cited works',           verb: 'cites',           prop: 'P2860', level: 2, color: '#2563eb', on: true },
+    { key: 'ack',      label: 'acknowledges',          verb: 'acknowledges',    prop: 'P7137', level: 2, color: '#7c3aed', on: true },
+    { key: 'based',    label: 'based on',              verb: 'is based on',     prop: 'P144',  level: 3, color: '#0f766e', on: true },
+    { key: 'inspired', label: 'inspired by',           verb: 'is inspired by',  prop: 'P941',  level: 3, color: '#c2410c', on: true }
+];
+const LEVEL_STYLE = {
+    1: { width: 2.8, dash: null,      opacity: 0.9  },   // plain
+    2: { width: 1.7, dash: '7 4',     opacity: 0.8  },   // dashed
+    3: { width: 2.2, dash: '0.1 5.5', opacity: 0.85 }    // dotted (round caps)
+};
+// Instance-of (P31) types kept while crawling
+const TYPES = [
+    { qid: 'Q1643932', label: 'TTRPG',        on: true },
+    { qid: 'Q2164067', label: 'TTRPG system', on: true },
+    { qid: 'Q1472433', label: 'TTRPG theory', on: true }
+];
+
+const ENDPOINT = 'https://query.wikidata.org/sparql';
+const MAX_NODES = 400;        // safety cap for the whole graph
+const CHUNK = 60;             // QIDs per SPARQL request
+const WRONG_WAY = '#dc2626';  // links pointing to a later work
+const REL = Object.fromEntries(RELATIONS.map(r => [r.key, r]));
+
+/* =====================================================================
+   Menu
+   ===================================================================== */
+const $ = id => document.getElementById(id);
+
+function buildMenu() {
+    const rel = $('relations');
+    RELATIONS.forEach(r => {
+        const s = LEVEL_STYLE[r.level];
+        const lab = document.createElement('label');
+        lab.className = 'chk';
+        lab.innerHTML =
+            `<input type="checkbox" data-rel="${r.key}" ${r.on ? 'checked' : ''}>` +
+            `<svg class="swatch" viewBox="0 0 24 8"><line x1="2" x2="22" y1="4" y2="4" stroke="${r.color}" ` +
+            `stroke-width="${s.width}" stroke-linecap="round" ${s.dash ? `stroke-dasharray="${s.dash}"` : ''}/></svg>${r.label}`;
+        lab.title = `Wikidata ${r.prop}${r.inverse ? ' + ' + r.inverse : ''}`;
+        rel.appendChild(lab);
+    });
+    const typ = $('types');
+    TYPES.forEach(t => {
+        const lab = document.createElement('label');
+        lab.className = 'chk';
+        lab.innerHTML = `<input type="checkbox" data-type="${t.qid}" ${t.on ? 'checked' : ''}>${t.label}`;
+        lab.title = `instance of ${t.qid}`;
+        typ.appendChild(lab);
+    });
+}
+
+function getConfig() {
+    return {
+        relations: RELATIONS.filter(r => document.querySelector(`[data-rel="${r.key}"]`).checked),
+        types: TYPES.filter(t => document.querySelector(`[data-type="${t.qid}"]`).checked).map(t => t.qid),
+        depth: Math.min(8, Math.max(1, parseInt($('max-depth').value) || 2)),
+        maxPer: Math.min(200, Math.max(1, parseInt($('max-per').value) || 30))
+    };
+}
+
+function setStatus(msg, type = '') {
+    const el = $('status');
+    el.textContent = msg;
+    el.title = msg;
+    el.className = type;
+}
+
+/* =====================================================================
+   Wikidata access (one request per crawl level, not per work)
+   ===================================================================== */
+async function sparql(query) {
+    const res = await fetch(ENDPOINT + '?' + new URLSearchParams({ query, format: 'json' }),
+        { headers: { Accept: 'application/sparql-results+json' } });
+    if (res.status === 429) throw new Error('Wikidata is rate-limiting requests; wait a moment and retry');
+    if (!res.ok) throw new Error(`Wikidata answered HTTP ${res.status}`);
+    return (await res.json()).results.bindings;
+}
+const qidOf = b => b.value.split('/').pop();
+const chunks = (arr, n) => Array.from({ length: Math.ceil(arr.length / n) }, (_, i) => arr.slice(i * n, i * n + n));
+const values = ids => ids.map(q => 'wd:' + q).join(' ');
+
+// Neighbours of the frontier works. dir 'back': works the frontier refers to;
+// dir 'fwd': works referring to the frontier. Returns [{f, n, k}].
+async function fetchNeighbours(frontier, dir, cfg) {
+    const blocks = [];
+    cfg.relations.forEach(r => {
+        const direct  = dir === 'back' ? `?f wdt:${r.prop} ?n` : `?n wdt:${r.prop} ?f`;
+        blocks.push(`{ ${direct} . BIND("${r.key}" AS ?k) }`);
+        if (r.inverse) {
+            const inv = dir === 'back' ? `?n wdt:${r.inverse} ?f` : `?f wdt:${r.inverse} ?n`;
+            blocks.push(`{ ${inv} . BIND("${r.key}" AS ?k) }`);
         }
+    });
+    const out = [];
+    for (const part of chunks(frontier, CHUNK)) {
+        const rows = await sparql(`
+            SELECT DISTINCT ?f ?n ?k WHERE {
+                VALUES ?f { ${values(part)} }
+                ${blocks.join(' UNION ')}
+                VALUES ?t { ${values(cfg.types)} }
+                ?n wdt:P31 ?t .
+                FILTER(?n != ?f)
+            }`);
+        rows.forEach(b => out.push({ f: qidOf(b.f), n: qidOf(b.n), k: b.k.value }));
+    }
+    return out;
+}
 
-        // Get current configuration from form
-        function getCurrentConfig() {
-            const filterTypesText = document.getElementById('filter-types').value.trim();
-            
-            // Parse QIDs from text area (support comma, space, or line break separation)
-            const filterTypes = filterTypesText
-                .split(/[,\s\n]+/)
-                .map(qid => qid.trim())
-                .filter(qid => qid && /^Q\d+$/i.test(qid));
-            
-            return {
-                citationProperty: document.getElementById('citation-property').value.trim() || 'P2860',
-                filterTypes: filterTypes
-            };
-        }
+// Labels and earliest date (publication P577 or inception P571)
+async function fetchInfo(ids) {
+    const info = new Map();
+    for (const part of chunks(ids, CHUNK)) {
+        const rows = await sparql(`
+            SELECT ?n ?nLabel (MIN(?d) AS ?date) WHERE {
+                VALUES ?n { ${values(part)} }
+                OPTIONAL { ?n wdt:P577|wdt:P571 ?d . }
+                SERVICE wikibase:label { bd:serviceParam wikibase:language "en,mul,fr" . }
+            } GROUP BY ?n ?nLabel`);
+        rows.forEach(b => {
+            const m = b.date && /^(-?\d{1,4})-/.exec(b.date.value);
+            info.set(qidOf(b.n), { label: b.nLabel ? b.nLabel.value : qidOf(b.n), year: m ? parseInt(m[1]) : null });
+        });
+    }
+    return info;
+}
 
-        // Initialize SVG and simulation
-        function initNetwork() {
-            const container = d3.select("#network-container");
-            container.selectAll("*").remove();
-            
-            const width = container.node().getBoundingClientRect().width;
-            const height = container.node().getBoundingClientRect().height;
-            
-            svg = container.append("svg")
-                .attr("width", width)
-                .attr("height", height);
-                
-            // Add zoom functionality
-            const g = svg.append("g");
-            const zoom = d3.zoom()
-                .scaleExtent([0.1, 4])
-                .on("zoom", (event) => {
-                    g.attr("transform", event.transform);
-                });
-            svg.call(zoom);
+// Every selected relation between works already in the graph
+async function fetchInterlinks(ids, cfg) {
+    const blocks = [];
+    cfg.relations.forEach(r => {
+        blocks.push(`{ ?a wdt:${r.prop} ?b . BIND("${r.key}" AS ?k) BIND(0 AS ?inv) }`);
+        if (r.inverse) blocks.push(`{ ?a wdt:${r.inverse} ?b . BIND("${r.key}" AS ?k) BIND(1 AS ?inv) }`);
+    });
+    const set = new Set(ids), out = [];
+    for (const part of chunks(ids, CHUNK)) {
+        const rows = await sparql(`
+            SELECT DISTINCT ?a ?b ?k ?inv WHERE {
+                VALUES ?a { ${values(part)} }
+                ${blocks.join(' UNION ')}
+            }`);
+        rows.forEach(b => {
+            const a = qidOf(b.a), o = qidOf(b.b);
+            if (!set.has(o) || a === o) return;
+            out.push(b.inv.value === '1' ? { from: o, to: a, k: b.k.value } : { from: a, to: o, k: b.k.value });
+        });
+    }
+    return out;
+}
 
-            // Create tooltip
-            if (tooltip) tooltip.remove();
-            tooltip = d3.select("body").append("div")
-                .attr("class", "tooltip")
-                .style("opacity", 0);
+/* =====================================================================
+   Crawl: backward from the centre, then onward from the centre
+   A link always goes  from = the referring work  ->  to = the referenced work
+   ===================================================================== */
+async function crawl(rootId, cfg, alive) {
+    const nodes = new Map([[rootId, { id: rootId, gen: 0, parent: null }]]);
+    const links = new Map();
+    const addLink = (from, to, k) => {
+        const key = `${from}|${to}|${k}`;
+        if (!links.has(key)) links.set(key, { from, to, k });
+    };
+    let truncated = false;
 
-            // Add arrow marker
-            svg.append("defs").append("marker")
-                .attr("id", "arrowhead")
-                .attr("viewBox", "0 -5 10 10")
-                .attr("refX", 8)
-                .attr("refY", 0)
-                .attr("markerWidth", 6)
-                .attr("markerHeight", 6)
-                .attr("orient", "auto")
-                .append("path")
-                .attr("d", "M0,-5L10,0L0,5")
-                .attr("fill", "#666");
+    for (const dir of ['back', 'fwd']) {
+        let frontier = [rootId];
+        for (let d = 1; d <= cfg.depth && frontier.length; d++) {
+            setStatus(`Crawling ${dir === 'back' ? 'backward' : 'onward'}, step ${d}/${cfg.depth} (${frontier.length} work${frontier.length > 1 ? 's' : ''})…`, 'loading');
+            const rows = await fetchNeighbours(frontier, dir, cfg);
+            if (!alive()) return null;
 
-            // Initialize force simulation
-            simulation = d3.forceSimulation()
-                .force("link", d3.forceLink().id(d => d.id).distance(100))
-                .force("charge", d3.forceManyBody().strength(-200))
-                .force("center", d3.forceCenter(width / 2, height / 2))
-                .force("collision", d3.forceCollide().radius(d => getNodeSize(d) + 5));
-
-            return { svg, g, width, height };
-        }
-
-        // Fetch data from Wikidata SPARQL endpoint with customizable properties
-        async function fetchQIDData(qid) {
-            const config = getCurrentConfig();
-            
-            if (config.filterTypes.length === 0) {
-                throw new Error('Please specify at least one filter type (QID)');
-            }
-
-            const filterTypesValues = config.filterTypes.map(type => `wd:${type}`).join(' ');
-            
-            const sparqlQuery = `
-                SELECT ?item ?itemLabel ?cited ?citedLabel ?pubDate ?citedPubDate WHERE {
-                    VALUES ?item { wd:${qid} }
-                    VALUES ?filtering { ${filterTypesValues} }
-                    ?item wdt:P31 ?filtering.
-                    OPTIONAL { ?item wdt:P577 ?pubDate . }
-                    OPTIONAL { ?item wdt:P571 ?incDate . }
-                    BIND(
-                            IF(BOUND(?pubDate) && BOUND(?incDate),
-                                IF(?pubDate < ?incDate, ?pubDate, ?incDate),
-                                COALESCE(?pubDate, ?incDate)
-                            ) AS ?pubDate
-                        )
-                    OPTIONAL {
-                        ?item wdt:${config.citationProperty} ?cited .
-                        ?cited wdt:P31 ?filtering.
-                        OPTIONAL { ?cited wdt:P577 ?citedPubDate . }
-                        OPTIONAL { ?cited wdt:P571 ?citedIncDate . }
-                        BIND(
-                                IF(BOUND(?citedPubDate) && BOUND(?citedIncDate),
-                                    IF(?citedPubDate < ?citedIncDate, ?citedPubDate, ?citedIncDate),
-                                    COALESCE(?citedPubDate, ?citedIncDate)
-                                ) AS ?citedPubDate
-                            )
+            const perWork = new Map();   // f -> Set of neighbours kept
+            const next = [];
+            for (const { f, n, k } of rows) {
+                if (!perWork.has(f)) perWork.set(f, new Set());
+                const kept = perWork.get(f);
+                if (!kept.has(n)) {
+                    if (kept.size >= cfg.maxPer) { truncated = true; continue; }
+                    if (!nodes.has(n)) {
+                        if (nodes.size >= MAX_NODES) { truncated = true; continue; }
+                        nodes.set(n, { id: n, gen: dir === 'back' ? -d : d, parent: f });
+                        next.push(n);
                     }
-                    SERVICE wikibase:label { bd:serviceParam wikibase:language "en" . }
+                    kept.add(n);
                 }
-            `;
-
-            const url = 'https://query.wikidata.org/sparql?' + new URLSearchParams({
-                query: sparqlQuery,
-                format: 'json'
-            });
-
-            try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                
-                const data = await response.json();
-                const bindings = data.results.bindings;
-                
-                if (bindings.length === 0) {
-                    throw new Error('QID not found or does not match filter criteria');
-                }
-
-                // Get main item info
-                const mainItem = bindings[0];
-                const itemInfo = {
-                    qid: qid,
-                    label: mainItem.itemLabel ? mainItem.itemLabel.value : qid,
-                    publicationDate: mainItem.pubDate ? new Date(mainItem.pubDate.value) : null,
-                    citations: []
-                };
-
-                // Get citations with their publication dates
-                const citedItems = new Set();
-                bindings.forEach(binding => {
-                    if (binding.cited) {
-                        const citedQID = binding.cited.value.split('/').pop();
-                        const citedLabel = binding.citedLabel ? binding.citedLabel.value : citedQID;
-                        const citedPubDate = binding.citedPubDate ? new Date(binding.citedPubDate.value) : null;
-                        
-                        if (!citedItems.has(citedQID)) {
-                            citedItems.add(citedQID);
-                            itemInfo.citations.push({
-                                qid: citedQID,
-                                label: citedLabel,
-                                publicationDate: citedPubDate
-                            });
-                        }
-                    }
-                });
-
-                return itemInfo;
-            } catch (error) {
-                console.error(`Error fetching ${qid}:`, error);
-                return {
-                    qid: qid,
-                    label: `${qid} (Error)`,
-                    publicationDate: null,
-                    citations: [],
-                    error: true
-                };
+                if (dir === 'back') addLink(f, n, k); else addLink(n, f, k);
             }
+            frontier = next;
         }
+    }
 
-        // Build network data structure
-        async function buildNetworkData(startQID, maxDepth) {
-            const nodes = new Map();
-            const links = [];
-            const toProcess = [{ qid: startQID, depth: 0 }];
-            const processed = new Set();
+    const ids = [...nodes.keys()];
+    setStatus(`Loading titles and dates of ${ids.length} works…`, 'loading');
+    const info = await fetchInfo(ids);
+    if (!alive()) return null;
+    nodes.forEach(n => {
+        const i = info.get(n.id);
+        n.label = i ? i.label : n.id;
+        n.year = i ? i.year : null;
+    });
 
-            while (toProcess.length > 0) {
-                const { qid, depth } = toProcess.shift();
-                
-                if (processed.has(qid) || depth >= maxDepth) {
-                    continue;
-                }
+    if (ids.length > 1) {
+        setStatus('Loading links between the works found…', 'loading');
+        (await fetchInterlinks(ids, cfg)).forEach(l => addLink(l.from, l.to, l.k));
+        if (!alive()) return null;
+    }
 
-                processed.add(qid);
-                updateStatus(`Processing ${qid} (depth ${depth + 1}/${maxDepth})...`, 'loading');
+    const data = { rootId, nodes: [...nodes.values()], links: [...links.values()], truncated };
+    data.nodes.forEach(n => { n.degree = 0; });
+    data.links.forEach(l => { nodes.get(l.from).degree++; nodes.get(l.to).degree++; });
+    return data;
+}
 
-                const itemData = await fetchQIDData(qid);
-                
-                if (itemData.error) {
-                    continue;
-                }
+/* =====================================================================
+   Timeline layout: x = year, y = lane (no overlapping labels)
+   ===================================================================== */
+const LANE_H = 40, PX_PER_YEAR_MIN = 22, AXIS_H = 26, MAX_LABEL = 28;
+const radius = n => n.gen === 0 ? 9 : Math.min(11, 4.5 + Math.sqrt(n.degree) * 1.3);
+const shortLabel = n => (n.label.length > MAX_LABEL ? n.label.slice(0, MAX_LABEL - 1).trimEnd() + '…' : n.label)
+    + (n.year !== null ? ` (${n.year})` : '');
 
-                // Add or update node
-                if (!nodes.has(qid)) {
-                    nodes.set(qid, {
-                        id: qid,
-                        label: itemData.label,
-                        publicationDate: itemData.publicationDate,
-                        year: itemData.publicationDate ? itemData.publicationDate.getFullYear() : null,
-                        depth: depth,
-                        isRoot: qid === startQID,
-                        inDegree: 0,
-                        outDegree: itemData.citations.length,
-                        citations: itemData.citations,
-                        error: false
-                    });
-                }
+function layout(data, width) {
+    const dated = data.nodes.filter(n => n.year !== null);
+    const now = new Date().getFullYear();
+    let y0 = dated.length ? d3.min(dated, n => n.year) : now - 10;
+    let y1 = dated.length ? d3.max(dated, n => n.year) : now;
+    if (y1 - y0 < 6) { y0 -= 3; y1 += 3; }
+    y0 -= 1; y1 += 1;
+    const hasUndated = dated.length < data.nodes.length;
+    const noDateYear = y1 + Math.max(2, Math.round((y1 - y0) * 0.06));
+    const end = hasUndated ? noDateYear : y1;
 
-                // Add citations to processing queue and create links
-                for (const citation of itemData.citations.slice(0, 15)) {
-                    // Add cited node if not exists
-                    if (!nodes.has(citation.qid)) {
-                        nodes.set(citation.qid, {
-                            id: citation.qid,
-                            label: citation.label,
-                            publicationDate: citation.publicationDate,
-                            year: citation.publicationDate ? citation.publicationDate.getFullYear() : null,
-                            depth: depth + 1,
-                            isRoot: false,
-                            inDegree: 0,
-                            outDegree: 0,
-                            citations: [],
-                            error: false
-                        });
-                    }
+    const inner = Math.max(width - 140, (end - y0) * PX_PER_YEAR_MIN);
+    const x = d3.scaleLinear().domain([y0, end]).range([0, inner]);
 
-                    // Create link
-                    links.push({
-                        source: qid,
-                        target: citation.qid,
-                        depth: depth
-                    });
+    // Place works one by one, the centre first, then by distance to the centre:
+    // each takes the free lane closest to the work it was reached from.
+    const byId = new Map(data.nodes.map(n => [n.id, n]));
+    const lanes = new Map();   // lane index -> occupied [x0, x1] intervals
+    const isFree = (lane, a, b) => !(lanes.get(lane) || []).some(([p, q]) => a < q && b > p);
+    const order = [...data.nodes].sort((a, b) =>
+        Math.abs(a.gen) - Math.abs(b.gen) || (a.year ?? 1e9) - (b.year ?? 1e9) || a.label.localeCompare(b.label));
 
-                    // Increment in-degree
-                    nodes.get(citation.qid).inDegree++;
-
-                    // Add to processing queue if within depth limit
-                    if (depth + 1 < maxDepth) {
-                        toProcess.push({ qid: citation.qid, depth: depth + 1 });
-                    }
-                }
-
-                // Add delay
-                await new Promise(resolve => setTimeout(resolve, 200));
-            }
-
-            return {
-                nodes: Array.from(nodes.values()),
-                links: links
-            };
+    order.forEach(n => {
+        n.x = x(n.year !== null ? n.year : noDateYear);
+        n.r = radius(n);
+        n.text = shortLabel(n);
+        const w = Math.max(n.text.length * (n.gen === 0 ? 6.9 : 6.1), n.r * 2) + 14;
+        const a = n.x - w / 2, b = n.x + w / 2;
+        const pref = n.parent ? byId.get(n.parent).lane : 0;
+        let lane = pref;
+        for (let i = 0; ; i++) {
+            // alternate below / above the preferred lane
+            const cand = pref + (i % 2 ? (i + 1) / 2 : -i / 2);
+            if (isFree(cand, a, b)) { lane = cand; break; }
         }
+        if (!lanes.has(lane)) lanes.set(lane, []);
+        lanes.get(lane).push([a, b]);
+        n.lane = lane;
+        n.y = lane * LANE_H;
+    });
 
-        // Get node color based on citations and dates
-        function getNodeColor(node) {
-            if (node.error || !node.year) return '#d0021b';
-            if (node.isRoot) return '#4a90e2';
-            if (node.inDegree >= 6) return '#ff6b35';
-            if (node.inDegree >= 3) return '#f5a623';
-            return '#7ed321';
-        }
+    const ys = data.nodes.map(n => n.y);
+    return {
+        x, y0, y1, noDateYear, hasUndated,
+        bounds: { x0: -70, x1: inner + 70, y0: d3.min(ys) - 34, y1: d3.max(ys) + 22 }
+    };
+}
 
-        // Get node size based on importance
-        function getNodeSize(node) {
-            if (node.isRoot) return 12;
-            return Math.max(6, Math.sqrt(node.inDegree * 8) + 4);
-        }
+function linkPath(l) {
+    const s = l.source, t = l.target, gap = 4;
+    if (Math.abs(s.x - t.x) < 24) {                    // same year: bulge on the right
+        const bulge = 38 + Math.abs(s.y - t.y) * 0.12;
+        return `M${s.x + s.r},${s.y}C${s.x + bulge},${s.y} ${t.x + bulge},${t.y} ${t.x + t.r + gap},${t.y}`;
+    }
+    const dir = s.x > t.x ? 1 : -1;                    // 1: the source is to the right of the target
+    const c = Math.max(26, Math.abs(s.x - t.x) * 0.45);
+    return `M${s.x - dir * s.r},${s.y}C${s.x - dir * c},${s.y} ${t.x + dir * c},${t.y} ${t.x + dir * (t.r + gap)},${t.y}`;
+}
 
-        // Setup timeline
-        function setupTimeline(data, g, width, height) {
-            const nodesWithDates = data.nodes.filter(n => n.year);
-            if (nodesWithDates.length === 0) return null;
-            
-            const years = nodesWithDates.map(n => n.year);
-            const minYear = Math.min(...years) - 2;
-            const maxYear = Math.max(...years) + 2;
-            
-            timeScale = d3.scaleLinear()
-                .domain([minYear, maxYear])
-                .range([100, width - 100]);
-            
-            const timelineGroup = g.append("g").attr("class", "timeline");
-            
-            // Main timeline axis
-            timelineGroup.append("line")
-                .attr("class", "timeline-axis")
-                .attr("x1", 100)
-                .attr("x2", width - 100)
-                .attr("y1", height - 60)
-                .attr("y2", height - 60);
-            
-            // Year ticks
-            const yearRange = d3.range(
-                Math.ceil(minYear / 5) * 5, 
-                Math.floor(maxYear / 5) * 5 + 1, 
-                5
-            );
-            
-            yearRange.forEach(year => {
-                const x = timeScale(year);
-                
-                timelineGroup.append("line")
-                    .attr("class", "timeline-tick")
-                    .attr("x1", x).attr("x2", x)
-                    .attr("y1", height - 65).attr("y2", height - 55);
-                
-                timelineGroup.append("text")
-                    .attr("class", "timeline-label")
-                    .attr("x", x).attr("y", height - 40)
-                    .text(year);
-            });
-            
-            // Decade separators
-            const decades = d3.range(
-                Math.ceil(minYear / 10) * 10,
-                Math.floor(maxYear / 10) * 10 + 1,
-                10
-            );
-            
-            decades.forEach(decade => {
-                const x = timeScale(decade);
-                timelineGroup.append("line")
-                    .attr("class", "decade-separator")
-                    .attr("x1", x).attr("x2", x)
-                    .attr("y1", 50).attr("y2", height - 70);
-            });
-            
-            return timeScale;
-        }
+/* =====================================================================
+   Rendering
+   ===================================================================== */
+let current = null;      // data of the graph on screen
+let view = null;         // { svg, zoom, fit }
+const tooltip = $('tooltip');
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-        // Set layout mode
-        function setLayout(layout) {
-            currentLayout = layout;
-            
-            document.getElementById('timeline-btn').classList.toggle('active', layout === 'timeline');
-            document.getElementById('force-btn').classList.toggle('active', layout === 'force');
-            
-            if (networkData.nodes.length === 0) return;
-            
-            if (layout === 'timeline' && timeScale) {
-                // Position nodes by year
-                networkData.nodes.forEach(node => {
-                    if (node.year) {
-                        node.fx = timeScale(node.year);
-                        node.fy = null; // Let Y position be determined by forces
-                    } else {
-                        node.fx = timeScale.range()[1] + 50; // Right side for unknown dates
-                        node.fy = null;
-                    }
-                });
-                
-                // Adjust forces for timeline
-                simulation.force("charge").strength(-100);
-                simulation.force("center", null);
-            } else {
-                // Free positioning
-                networkData.nodes.forEach(node => {
-                    node.fx = null;
-                    node.fy = null;
-                });
-                
-                // Reset forces
-                const container = d3.select("#network-container");
-                const width = container.node().getBoundingClientRect().width;
-                const height = container.node().getBoundingClientRect().height;
-                
-                simulation.force("charge").strength(-200);
-                simulation.force("center", d3.forceCenter(width / 2, height / 2));
-            }
-            
-            simulation.alpha(0.5).restart();
-        }
+function showTip(event, html) {
+    tooltip.innerHTML = html;
+    tooltip.style.opacity = 1;
+    const w = tooltip.offsetWidth, h = tooltip.offsetHeight;
+    tooltip.style.left = Math.min(event.clientX + 12, window.innerWidth - w - 6) + 'px';
+    tooltip.style.top = Math.max(6, Math.min(event.clientY + 14, window.innerHeight - h - 6)) + 'px';
+}
+const hideTip = () => { tooltip.style.opacity = 0; };
 
-        // Visualize network
-        function visualizeNetwork(data) {
-            const { svg, g, width, height } = initNetwork();
+function render(data) {
+    current = data;
+    const box = $('graph');
+    d3.select(box).select('svg').remove();
+    $('empty').style.display = data ? 'none' : '';
+    view = null;
+    if (!data) return;
 
-            networkData = data;
-            nodeMap.clear();
-            data.nodes.forEach(node => nodeMap.set(node.id, node));
+    const W = box.clientWidth, H = box.clientHeight, plotH = H - AXIS_H;
+    const L = layout(data, W);
+    const byId = new Map(data.nodes.map(n => [n.id, n]));
+    const links = data.links.map(l => {
+        const source = byId.get(l.from), target = byId.get(l.to), rel = REL[l.k];
+        const wrongWay = source.year !== null && target.year !== null && source.year < target.year;
+        return { source, target, rel, wrongWay, color: wrongWay ? WRONG_WAY : rel.color };
+    }).sort((a, b) => b.rel.level - a.rel.level);      // strongest links drawn on top
 
-            // Setup timeline
-            setupTimeline(data, g, width, height);
+    const svg = d3.select(box).append('svg').attr('viewBox', `0 0 ${W} ${H}`);
 
-            // Create links
-            const link = g.append("g")
-                .selectAll("path")
-                .data(data.links)
-                .enter().append("path")
-                .attr("class", "link")
-                .classed("backward-citation", d => {
-                    const source = nodeMap.get(d.source);
-                    const target = nodeMap.get(d.target);
-                    return source?.year && target?.year && source.year > target.year;
-                })
-                .attr("marker-end", "url(#arrowhead)");
+    // arrow heads, one per colour
+    const defs = svg.append('defs');
+    [...new Set([...RELATIONS.map(r => r.color), WRONG_WAY])].forEach(c => {
+        defs.append('marker').attr('id', 'arrow-' + c.slice(1))
+            .attr('viewBox', '0 -4 8 8').attr('refX', 7).attr('refY', 0)
+            .attr('markerUnits', 'userSpaceOnUse').attr('markerWidth', 9).attr('markerHeight', 9).attr('orient', 'auto')
+            .append('path').attr('d', 'M0,-3.5L8,0L0,3.5Z').attr('fill', c);
+    });
 
-            // Create nodes
-            const node = g.append("g")
-                .selectAll("g")
-                .data(data.nodes)
-                .enter().append("g")
-                .attr("class", "node")
-                .call(d3.drag()
-                    .on("start", dragstarted)
-                    .on("drag", dragged)
-                    .on("end", dragended));
+    const grid = svg.append('g').attr('class', 'grid');
+    const g = svg.append('g');                          // zoomed content
+    const axis = svg.append('g').attr('class', 'axis'); // stays at the bottom of the window
+    axis.append('rect').attr('class', 'axis-bg').attr('x', 0).attr('y', plotH).attr('width', W).attr('height', AXIS_H);
+    axis.append('line').attr('class', 'axis-line').attr('x1', 0).attr('x2', W).attr('y1', plotH).attr('y2', plotH);
+    const ticks = axis.append('g');
 
-            // Add circles
-            node.append("circle")
-                .attr("r", getNodeSize)
-                .style("fill", getNodeColor);
+    const linkSel = g.append('g').selectAll('path').data(links).join('path')
+        .attr('class', 'link')
+        .attr('d', linkPath)
+        .attr('stroke', d => d.color)
+        .attr('stroke-width', d => LEVEL_STYLE[d.rel.level].width)
+        .attr('stroke-dasharray', d => LEVEL_STYLE[d.rel.level].dash)
+        .attr('opacity', d => LEVEL_STYLE[d.rel.level].opacity)
+        .attr('marker-end', d => `url(#arrow-${d.color.slice(1)})`);
 
-            // Add labels
-            node.append("text")
-                .attr("dy", d => getNodeSize(d) + 15)
-                .style("font-size", "10px")
-                .style("font-weight", d => d.inDegree > 2 ? "bold" : "normal")
-                .text(d => {
-                    const maxLength = 20;
-                    let name = d.label.length > maxLength 
-                        ? d.label.substring(0, maxLength) + '...' 
-                        : d.label;
-                    if (d.year) name += ` (${d.year})`;
-                    return name;
-                });
+    g.append('g').selectAll('path').data(links).join('path')
+        .attr('class', 'link-hit')
+        .attr('d', linkPath)
+        .on('mousemove', (e, d) => showTip(e,
+            `<strong>${esc(d.source.label)}</strong> ${esc(d.rel.verb)} <strong>${esc(d.target.label)}</strong>` +
+            (d.wrongWay ? `<br><small>⚠ the referenced work is dated later (${d.source.year} → ${d.target.year})</small>` : '')))
+        .on('mouseleave', hideTip);
 
-            // Add interactivity
-            node
-                .on("mouseover", function(event, d) {
-                    tooltip.transition().duration(200).style("opacity", .9);
-                    
-                    const dateStr = d.year ? d.year.toString() : 'Unknown';
-                    let tooltipContent = `
-                        <strong>${d.label}</strong><br/>
-                        QID: ${d.id}<br/>
-                        Published: ${dateStr}<br/>
-                        Cited by: ${d.inDegree} nodes<br/>
-                        Cites: ${d.outDegree} nodes<br/>
-                        Depth: ${d.depth}
-                    `;
-                    
-                    if (d.isRoot) tooltipContent += '<br/><strong>ROOT NODE</strong>';
-                    
-                    tooltip.html(tooltipContent)
-                        .style("left", (event.pageX + 10) + "px")
-                        .style("top", (event.pageY - 28) + "px");
-                        
-                    link.classed("highlighted", l => 
-                        (l.source.id || l.source) === d.id || (l.target.id || l.target) === d.id
-                    );
-                })
-                .on("mouseout", function() {
-                    tooltip.transition().duration(500).style("opacity", 0);
-                    link.classed("highlighted", false);
-                })
-                .on("click", function(event, d) {
-                    window.open(`https://www.wikidata.org/wiki/${d.id}`, '_blank');
-                });
+    const nodeSel = g.append('g').selectAll('g').data(data.nodes).join('g')
+        .attr('class', d => 'node' + (d.gen === 0 ? ' root' : d.gen > 0 ? ' fwd' : '') + (d.year === null ? ' nodate' : ''))
+        .attr('transform', d => `translate(${d.x},${d.y})`);
+    nodeSel.append('circle').attr('r', d => d.r);
+    nodeSel.append('text').attr('y', d => -d.r - 5).text(d => d.text);
 
-            // Update simulation
-            simulation
-                .nodes(data.nodes)
-                .on("tick", () => {
-                    link.attr("d", d => {
-                        const dx = d.target.x - d.source.x;
-                        const dy = d.target.y - d.source.y;
-                        const dr = currentLayout === 'timeline' ? Math.sqrt(dx * dx + dy * dy) * 0.3 : 0;
-                        return `M${d.source.x},${d.source.y}A${dr},${dr} 0 0,1 ${d.target.x},${d.target.y}`;
-                    });
+    const neighbours = new Map(data.nodes.map(n => [n.id, new Set([n.id])]));
+    links.forEach(l => { neighbours.get(l.source.id).add(l.target.id); neighbours.get(l.target.id).add(l.source.id); });
 
-                    node.attr("transform", d => `translate(${d.x},${d.y})`);
-                });
-
-            simulation.force("link").links(data.links);
-            
-            // Apply initial layout
-            setLayout(currentLayout);
-        }
-
-        // Drag functions
-        function dragstarted(event, d) {
-            if (!event.active) simulation.alphaTarget(0.3).restart();
-            d.fx = d.x;
-            d.fy = d.y;
-        }
-
-        function dragged(event, d) {
-            if (currentLayout === 'timeline' && d.year && timeScale) {
-                d.fx = timeScale(d.year); // Keep X position fixed to timeline
-                d.fy = event.y;
-            } else {
-                d.fx = event.x;
-                d.fy = event.y;
-            }
-        }
-
-        function dragended(event, d) {
-            if (!event.active) simulation.alphaTarget(0);
-            if (currentLayout !== 'timeline') {
-                d.fx = null;
-                d.fy = null;
-            }
-        }
-
-        // Main function to build network
-        async function buildNetwork() {
-            const qidInput = document.getElementById('qid-input').value.trim();
-            const maxDepthInput = parseInt(document.getElementById('max-depth').value) || 4;
-            
-            if (!qidInput) {
-                updateStatus('Please enter a QID', 'error');
-                return;
-            }
-
-            const qidRegex = /^Q\d+$/i;
-            if (!qidRegex.test(qidInput)) {
-                updateStatus('Please enter a valid QID format (e.g., Q112134730)', 'error');
-                return;
-            }
-
-            // Validate configuration
-            const config = getCurrentConfig();
-            if (!config.citationProperty || !/^P\d+$/i.test(config.citationProperty)) {
-                updateStatus('Please enter a valid citation property (e.g., P2860)', 'error');
-                return;
-            }
-
-            if (config.filterTypes.length === 0) {
-                updateStatus('Please enter at least one filter type QID', 'error');
-                return;
-            }
-
-            const qid = qidInput.toUpperCase();
-            rootQID = qid;
-            
-            try {
-                updateStatus('Building citation network...', 'loading');
-                
-                const data = await buildNetworkData(qid, maxDepthInput);
-                
-                if (data.nodes.length === 0) {
-                    updateStatus('No data found with current configuration', 'error');
-                    return;
-                }
-
-                visualizeNetwork(data);
-                updateStatus(`Network built! ${data.nodes.length} nodes, ${data.links.length} connections`, 'success');
-                updateStats(data);
-                
-            } catch (error) {
-                console.error('Error building network:', error);
-                updateStatus('Error building network: ' + error.message, 'error');
-            }
-        }
-
-        // Update status
-        function updateStatus(message, type = '') {
-            const statusEl = document.getElementById('status');
-            statusEl.textContent = message;
-            statusEl.className = `status ${type}`;
-        }
-
-        // Update statistics
-        function updateStats(data) {
-            const mostCitedNode = data.nodes.reduce((max, node) => 
-                node.inDegree > max.inDegree ? node : max, 
-                { inDegree: 0, label: 'None' }
-            );
-            
-            const maxDepth = Math.max(...data.nodes.map(n => n.depth));
-            const nodesWithDates = data.nodes.filter(n => n.year);
-            const dateRange = nodesWithDates.length > 0 
-                ? `${Math.min(...nodesWithDates.map(n => n.year))} - ${Math.max(...nodesWithDates.map(n => n.year))}`
-                : 'No dates available';
-
-            document.getElementById('total-nodes').textContent = `Total Nodes: ${data.nodes.length}`;
-            document.getElementById('total-links').textContent = `Total Links: ${data.links.length}`;
-            document.getElementById('max-depth-reached').textContent = `Max Depth: ${maxDepth + 1}`;
-            document.getElementById('most-cited').textContent = `Most Cited: ${mostCitedNode.label} (${mostCitedNode.inDegree})`;
-            document.getElementById('date-range').textContent = `Date Range: ${dateRange}`;
-        }
-
-        // Clear network
-        function clearNetwork() {
-            d3.select("#network-container").selectAll("*").remove();
-            if (tooltip) tooltip.remove();
-            if (simulation) simulation.stop();
-            networkData = { nodes: [], links: [] };
-            nodeMap.clear();
-            timeScale = null;
-            updateStatus('');
-            document.getElementById('total-nodes').textContent = 'Total Nodes: 0';
-            document.getElementById('total-links').textContent = 'Total Links: 0';
-            document.getElementById('max-depth-reached').textContent = 'Max Depth: 0';
-            document.getElementById('most-cited').textContent = 'Most Cited: -';
-            document.getElementById('date-range').textContent = 'Date Range: -';
-        }
-
-        // Handle Enter key
-        document.getElementById('qid-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                buildNetwork();
-            }
+    nodeSel
+        .on('mouseenter', (e, d) => {
+            const near = neighbours.get(d.id);
+            nodeSel.classed('dim', n => !near.has(n.id));
+            linkSel.classed('dim', l => l.source !== d && l.target !== d);
+        })
+        .on('mousemove', (e, d) => {
+            const refs = links.filter(l => l.source === d).length, by = links.filter(l => l.target === d).length;
+            showTip(e,
+                `<strong>${esc(d.label)}</strong><br>${d.year !== null ? d.year : 'no date'} · ${d.id}<br>` +
+                `refers to ${refs} · referred to by ${by}<br>` +
+                (d.gen === 0 ? '<small>Centre of this graph · Ctrl+click: Wikidata</small>'
+                             : '<small>Click: centre a new graph here · Ctrl+click: Wikidata</small>'));
+        })
+        .on('mouseleave', () => { hideTip(); nodeSel.classed('dim', false); linkSel.classed('dim', false); })
+        .on('click', (e, d) => {
+            if (e.ctrlKey || e.metaKey || e.shiftKey) { window.open(`https://www.wikidata.org/wiki/${d.id}`, '_blank', 'noopener'); return; }
+            if (d.gen !== 0) { hideTip(); start(d.id); }
         });
 
-        // Initialize with TTRPG preset
-        setPreset('apocalypseworld');
-        updateStatus('Enter a preset or your own configuration as needed');
-    </script>
+    // sticky year axis + grid, redrawn on every zoom / pan
+    function drawAxis(t) {
+        const zx = t.rescaleX(L.x);
+        const px = Math.abs(zx(1) - zx(0));
+        const step = [1, 2, 5, 10, 20, 25, 50, 100].find(s => s * px >= 46) || 200;
+        const major = step >= 10 ? step * 5 : step === 5 ? 10 : step === 2 ? 10 : 5;
+        const a = Math.max(L.y0, Math.floor(zx.invert(0) / step) * step);
+        const b = Math.min(L.y1, zx.invert(W));
+        const years = d3.range(Math.ceil(a / step) * step, b + 0.001, step);
+        const items = years.map(y => ({ x: zx(y), text: y, major: y % major === 0 }));
+        if (L.hasUndated) items.push({ x: zx(L.noDateYear), text: 'no date', major: false });
 
+        grid.selectAll('line').data(items).join('line')
+            .attr('class', d => d.major ? 'major' : null)
+            .attr('x1', d => d.x).attr('x2', d => d.x).attr('y1', 0).attr('y2', plotH);
+        ticks.selectAll('text').data(items).join('text')
+            .attr('class', d => d.major ? 'major' : null)
+            .attr('x', d => d.x).attr('y', plotH + 17).text(d => d.text);
+    }
+
+    const zoom = d3.zoom().scaleExtent([0.15, 5])
+        .on('zoom', e => { g.attr('transform', e.transform); drawAxis(e.transform); });
+    svg.call(zoom).on('dblclick.zoom', null);
+
+    function fit(animate) {
+        const b = L.bounds, bw = b.x1 - b.x0, bh = b.y1 - b.y0;
+        const k = Math.max(0.3, Math.min(1.4, W / bw, plotH / bh));
+        const root = byId.get(data.rootId);
+        // show everything when it fits; otherwise keep the centre work in view
+        let tx = (W - bw * k) / 2 - b.x0 * k, ty = (plotH - bh * k) / 2 - b.y0 * k;
+        if (bw * k > W) tx = Math.min(-b.x0 * k, Math.max(W - b.x1 * k, W / 2 - root.x * k));
+        if (bh * k > plotH) ty = plotH / 2 - root.y * k;
+        const t = d3.zoomIdentity.translate(tx, ty).scale(k);
+        (animate ? svg.transition().duration(350) : svg).call(zoom.transform, t);
+    }
+    fit(false);
+    view = { fit };
+}
+
+/* =====================================================================
+   Controller
+   ===================================================================== */
+let runId = 0;
+let currentRoot = null;
+const history = [];
+
+async function start(qid, fromHistory = false) {
+    qid = String(qid).trim().toUpperCase();
+    if (!/^Q\d+$/.test(qid)) { setStatus('Enter a valid QID (e.g. Q112134730)', 'error'); return; }
+    const cfg = getConfig();
+    if (!cfg.relations.length) { setStatus('Check at least one relation', 'error'); return; }
+    if (!cfg.types.length) { setStatus('Check at least one type', 'error'); return; }
+
+    const id = ++runId, alive = () => id === runId;
+    $('qid-input').value = qid;
+    try {
+        const data = await crawl(qid, cfg, alive);
+        if (!data) return;                               // superseded by a newer request
+        if (!fromHistory && currentRoot && currentRoot !== qid) history.push(currentRoot);
+        currentRoot = qid;
+        $('back-btn').disabled = !history.length;
+        render(data);
+
+        const root = data.nodes.find(n => n.gen === 0);
+        const years = data.nodes.filter(n => n.year !== null).map(n => n.year);
+        const back = data.nodes.filter(n => n.gen < 0).length, fwd = data.nodes.filter(n => n.gen > 0).length;
+        if (data.nodes.length === 1) {
+            setStatus(`${root.label}: no relation found with the checked relations and types`, 'error');
+        } else {
+            setStatus(`${root.label}: ${back} earlier + ${fwd} later works · ${data.links.length} links` +
+                (years.length ? ` · ${d3.min(years)}–${d3.max(years)}` : '') +
+                (data.truncated ? ' · truncated (raise Max/work)' : ''));
+        }
+    } catch (err) {
+        if (!alive()) return;
+        console.error(err);
+        setStatus('Error: ' + err.message, 'error');
+    }
+}
+
+buildMenu();
+$('build-btn').addEventListener('click', () => start($('qid-input').value));
+$('qid-input').addEventListener('keydown', e => { if (e.key === 'Enter') start($('qid-input').value); });
+$('preset').addEventListener('change', e => { if (e.target.value) { start(e.target.value); e.target.value = ''; } });
+$('back-btn').addEventListener('click', () => { if (history.length) start(history.pop(), true); });
+$('fit-btn').addEventListener('click', () => { if (view) view.fit(true); });
+// changing a checkbox, the depth or the cap rebuilds the current graph
+document.querySelector('header').addEventListener('change', e => {
+    if (currentRoot && e.target.matches('[data-rel], [data-type], #max-depth, #max-per')) start(currentRoot, true);
+});
+let resizeTimer;
+window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { if (current) render(current); }, 150); });
+
+start($('qid-input').value);
+</script>
 </body>
 </html>
